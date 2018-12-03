@@ -9,6 +9,8 @@
 import MainMenu from '@/components/MainMenu'
 
 export default {
-  components: { MainMenu }
+  components: {
+    MainMenu
+  }
 }
 </script>
