@@ -29,6 +29,13 @@ export default {
         { text: 'Create New Room', type: 'button', click: this.createRoom },
         { text: 'Main', type: 'button', click: this.main }
       ]
+    } else if (this.$route.path === '/settings') {
+      this.defaultList = [
+        { text: 'About', type: 'button', click: this.about },
+        { text: 'Go To Room', type: 'button', click: this.toRoom },
+        { text: 'Create New Room', type: 'button', click: this.createRoom },
+        { text: 'Main', type: 'button', click: this.main }
+      ]
     } else {
       this.defaultList = [
         { text: 'Settings', type: 'button', click: this.settings },
@@ -40,7 +47,9 @@ export default {
     this.list = this.defaultList
   },
   methods: {
-    settings () { },
+    settings () {
+      this.$router.push('/settings')
+    },
     toRoom () {
       this.list = [
         { text: 'Room ID', type: 'input', click: this.doNothing },
