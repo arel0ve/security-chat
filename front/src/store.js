@@ -7,7 +7,8 @@ export default new Vuex.Store({
   state: {
     options: {
       username: '',
-      storage: ''
+      storage: '',
+      lifeDays: 0
     }
   },
   getters: {
@@ -22,6 +23,24 @@ export default new Vuex.Store({
         state.options.storage = window.localStorage.getItem('storage') ? window.localStorage.getItem('storage') : ''
       }
       return state.options.storage
+    },
+    getLife (state) {
+      if (!state.options.lifeDays) {
+        state.options.lifeDays = window.localStorage.getItem('lifeDays') ? +window.localStorage.getItem('lifeDays') : 0
+      }
+      if (state.options.lifeDays < 7) {
+        return 'Day'
+      }
+      if (state.options.lifeDays < 30) {
+        return 'Week'
+      }
+      if (state.options.lifeDays < 355) {
+        return 'Month'
+      }
+      if (state.options.lifeDays < 1000) {
+        return 'Year'
+      }
+      return 'Forever'
     }
   },
   mutations: {
@@ -32,6 +51,26 @@ export default new Vuex.Store({
     saveStorage (state, storage) {
       state.options.storage = storage
       window.localStorage.setItem('storage', storage)
+    },
+    saveLife (state, life) {
+      switch (life) {
+        case 'Day':
+          state.options.lifeDays = 1
+          break
+        case 'Week':
+          state.options.lifeDays = 7
+          break
+        case 'Month':
+          state.options.lifeDays = 30
+          break
+        case 'Year':
+          state.options.lifeDays = 355
+          break
+        default:
+          state.options.lifeDays = 5000
+          break
+      }
+      window.localStorage.setItem('lifeDays', state.options.lifeDays)
     }
   },
   actions: {

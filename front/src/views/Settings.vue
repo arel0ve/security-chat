@@ -12,6 +12,14 @@
           <option>Local Storage</option>
           <option>Database</option>
         </select>
+        <label for="life" v-if="storage === 'Database'">Shelf life</label>
+        <select id="life" v-if="storage === 'Database'" v-model="life" @change="saveLife">
+          <option>Day</option>
+          <option>Week</option>
+          <option>Month</option>
+          <option>Year</option>
+          <option>Forever</option>
+        </select>
       </div>
     </form>
   </div>
@@ -27,12 +35,14 @@ export default {
   data () {
     return {
       username: '',
-      storage: ''
+      storage: '',
+      life: ''
     }
   },
   async created () {
     this.username = this.$store.getters.getUsername
     this.storage = this.$store.getters.getStorage
+    this.life = this.$store.getters.getLife
   },
   methods: {
     saveUsername () {
@@ -40,6 +50,9 @@ export default {
     },
     saveStorage () {
       this.$store.commit('saveStorage', this.storage)
+    },
+    saveLife () {
+      this.$store.commit('saveLife', this.life)
     }
   }
 }
@@ -86,13 +99,31 @@ export default {
       border-radius: 3px;
       color: lime;
       font-size: 24px;
-      text-align: center;
+      padding-left: 5px;
       padding-bottom: 3px;
       &:focus {
         outline: 0;
         border-bottom: outset 3px #009900;
         padding-bottom: 0;
         transition: border-bottom 200ms, padding-bottom 200ms;
+      }
+    }
+    select {
+      background: #000;
+      color: lime;
+      border: none;
+      font-size: 24px;
+      padding-bottom: 3px;
+      &:focus {
+        outline: 0;
+        border-bottom: outset 3px #009900;
+        padding-bottom: 0;
+        transition: border-bottom 200ms, padding-bottom 200ms;
+      }
+      option {
+        &:focus {
+          outline: 0;
+        }
       }
     }
   }
