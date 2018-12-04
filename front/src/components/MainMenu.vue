@@ -63,7 +63,28 @@ export default {
         { text: 'Back', type: 'button', click: this.back }
       ]
     },
-    visit () { },
+    async visit () {
+      try {
+        if (!this.room || !this.password) {
+          return
+        }
+        const response = await fetch(`http://localhost:3000/api/room/${this.room}?password=${this.password}`)
+        const result = await response.json()
+        if (result.id) {
+          this.$store.commit('addRoom', { id: result.id, password: this.password })
+          this.$router.push(`/chat/${result.id}`)
+        } else {
+          this.list = [
+            { text: result.message, type: 'error', click: this.doNothing },
+            { text: result.id, type: 'info', click: this.doNothing },
+            { text: 'Try Again', type: 'button', click: this.toRoom },
+            { text: 'Back', type: 'button', click: this.back }
+          ]
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    },
     createRoom () {
       this.list = [
         { text: 'Password of Room', type: 'password', click: this.doNothing },
@@ -98,7 +119,7 @@ export default {
         } else {
           this.list = [
             { text: result.message, type: 'error', click: this.doNothing },
-            { text: 'No room', type: 'info', click: this.doNothing },
+            { text: result.id, type: 'info', click: this.doNothing },
             { text: 'Try Again', type: 'button', click: this.createRoom },
             { text: 'Back', type: 'button', click: this.back }
           ]

@@ -30,23 +30,35 @@ router.post('/', async function(req, res, next) {
   }
 });
 
-router.get('/', async function(req, res, next) {
+router.get('/:room', async function(req, res, next) {
   try {
-    if (!req.body.password || !req.body.room) {
-      res.status(400).send('Bad request');
+    if (!req.query.password || !req.params.room) {
+      res.status(400).json({
+        message: 'Bad request',
+        id: null
+      });
       return;
     }
 
-    let room = await Room.findOne({_id: req.body.room});
+    let room = await Room.findOne({_id: req.params.room});
 
-    if (room.password !== req.body.password) {
-      res.status(401).send('Wrong password');
+    if (room.password !== req.query.password) {
+      res.status(401).json({
+        message: 'Wrong password',
+        id: null
+      });
       return;
     }
 
-    res.status(200).send(room._id);
+    res.status(200).json({
+      message: 'Accessed',
+      id: room._id
+    });
   } catch (e) {
-    res.status(500).send('Server error');
+    res.status(500).json({
+      message: 'Server error',
+      id: null
+    });
   }
 });
 
