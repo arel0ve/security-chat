@@ -43,6 +43,9 @@ export default new Vuex.Store({
         return 'Year'
       }
       return 'Forever'
+    },
+    getRoom (state, id) {
+      return _.find(state.rooms, { id })
     }
   },
   mutations: {

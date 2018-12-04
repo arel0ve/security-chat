@@ -5,7 +5,7 @@
       <hr>
       <div class="form-content">
         <label for="username">Username</label>
-        <input id="username" v-model="username" @change="saveUsername" placeholder="Username">
+        <input type="text" id="username" v-model="username" @change="saveUsername" placeholder="Username">
         <label for="storage">Place of storage</label>
         <select id="storage" v-model="storage" @change="saveStorage">
           <option>Application Store</option>
