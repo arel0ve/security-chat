@@ -29,17 +29,19 @@ export default {
   },
   async created () {
     this.username = this.$store.getters.getUsername
-    let verifiedRoom = this.$store.getters.getRoom
+    this.room.id = this.$route.params.id
+    let verifiedRoom = await this.$store.dispatch('getRoom', this.room.id)
+    console.log(verifiedRoom)
     if (!verifiedRoom) {
-      const password = window.prompt('Input your password', '')
-      const id = this.$route.params.id
+      const password = window.prompt(`Input password of ${this.room.id} room`, '')
       if (!password) {
         this.$router.push('/')
       }
-      const response = await fetch(`http://localhost:3000/api/room/${id}?password=${password}`)
+      const response = await fetch(`http://localhost:3000/api/room/${this.room.id}?password=${password}`)
       const result = await response.json()
       if (result.id) {
         this.$store.commit('addRoom', { id: result.id, password: this.password })
+        this.room = { id: result.id, password: this.password }
       } else {
         this.$router.push('/')
       }
