@@ -3,9 +3,15 @@
     <MainMenu mode="menu"/>
     <form class="settings">
       <hr>
-      <div class="form-group">
+      <div class="form-content">
         <label for="username">Username</label>
         <input id="username" v-model="username" @change="saveUsername" placeholder="Username">
+        <label for="storage">Place of storage</label>
+        <select id="storage" v-model="storage" @change="saveStorage">
+          <option>Application Store</option>
+          <option>Local Storage</option>
+          <option>Database</option>
+        </select>
       </div>
     </form>
   </div>
@@ -20,15 +26,20 @@ export default {
   },
   data () {
     return {
-      username: ''
+      username: '',
+      storage: ''
     }
   },
   async created () {
     this.username = this.$store.getters.getUsername
+    this.storage = this.$store.getters.getStorage
   },
   methods: {
     saveUsername () {
       this.$store.commit('saveUsername', this.username)
+    },
+    saveStorage () {
+      this.$store.commit('saveStorage', this.storage)
     }
   }
 }
@@ -61,7 +72,7 @@ export default {
       top: -11px;
     }
   }
-  .form-group {
+  .form-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-gap: 12px;
