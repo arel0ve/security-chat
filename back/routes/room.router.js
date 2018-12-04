@@ -4,7 +4,6 @@ const Room = require('../schemas/room.schema');
 
 router.post('/', async function(req, res, next) {
   try {
-    console.log(req.body);
     if (!req.body.password) {
       res.status(400).json({
         message: 'Bad request',

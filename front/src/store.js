@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import _ from 'lodash'
 
 Vue.use(Vuex)
 
@@ -9,7 +10,8 @@ export default new Vuex.Store({
       username: '',
       storage: '',
       lifeDays: 0
-    }
+    },
+    rooms: [ ]
   },
   getters: {
     getUsername (state) {
@@ -71,6 +73,15 @@ export default new Vuex.Store({
           break
       }
       window.localStorage.setItem('lifeDays', state.options.lifeDays)
+    },
+    addRoom (state, { id, password }) {
+      if (!id || !password) {
+        return
+      }
+      if (_.find(state.rooms, { id })) {
+        return
+      }
+      state.rooms.push({ id, password })
     }
   },
   actions: {

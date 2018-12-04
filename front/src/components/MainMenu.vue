@@ -5,7 +5,8 @@
       <input type="password" v-model="password" v-else-if="li.type === 'password'" :placeholder="li.text">
       <input type="password" v-model="passwordRepeat" v-else-if="li.type === 'passwordRepeat'" :placeholder="li.text">
       <span v-else-if="li.type === 'button'" class="button">{{ li.text }}</span>
-      <span v-else class="info">{{ li.text }}</span>
+      <span v-else-if="li.type === 'info'" class="info">{{ li.text }}</span>
+      <span v-else class="error">{{ li.text }}</span>
     </li>
   </ul>
 </template>
@@ -79,22 +80,35 @@ export default {
         const response = await fetch('http://localhost:3000/api/room/', {
           method: 'post',
           headers: new Headers({
-            "Content-Type": "application/json; charset=utf-8",
+            'Content-Type': 'application/json; charset=utf-8'
           }),
           body: JSON.stringify({
             password: this.password
           })
         })
-        const result = await response.json();
-        this.list = [
-          { text: result.message, type: 'info', click: this.doNothing },
-          { text: result.id, type: 'info', click: this.doNothing },
-          { text: 'Go To Room', type: 'button', click: this.create },
-          { text: 'Back', type: 'button', click: this.back }
-        ]
+        const result = await response.json()
+        if (result.id) {
+          this.$store.commit('addRoom', { id: result.id, password: this.password })
+          this.list = [
+            { text: result.message, type: 'info', click: this.doNothing },
+            { text: result.id, type: 'info', click: this.doNothing },
+            { text: 'Go To Room', type: 'button', click: this.redirectToRoom.bind(this, result.id) },
+            { text: 'Back', type: 'button', click: this.back }
+          ]
+        } else {
+          this.list = [
+            { text: result.message, type: 'error', click: this.doNothing },
+            { text: 'No room', type: 'info', click: this.doNothing },
+            { text: 'Try Again', type: 'button', click: this.createRoom },
+            { text: 'Back', type: 'button', click: this.back }
+          ]
+        }
       } catch (e) {
         console.log(e)
       }
+    },
+    redirectToRoom (id) {
+      this.$router.push(`/chat/${id}`)
     },
     back () {
       this.list = this.defaultList
@@ -145,6 +159,11 @@ ul {
       .info {
         color: #009900;
         cursor: text;
+        overflow-wrap: break-word;
+      }
+      .error {
+        color: #990000;
+        cursor: text;
       }
       @media (min-width: 768px) {
         width: 65%;
@@ -181,6 +200,11 @@ ul {
       }
       .info {
         color: #009900;
+        cursor: text;
+        overflow-wrap: break-word;
+      }
+      .error {
+        color: #990000;
         cursor: text;
       }
       @media (min-width: 768px) {
