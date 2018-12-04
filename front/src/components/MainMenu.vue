@@ -1,8 +1,9 @@
 <template>
   <ul :class="{'main': mode === 'main', 'menu': mode === 'menu'}">
     <li v-for="(li, index) of list" :key="index" v-on="{ click: li.click }">
-      <input type="text" v-if="li.type === 'input'" :placeholder="li.text">
-      <input type="password" v-else-if="li.type === 'password'" :placeholder="li.text">
+      <input type="text" v-model="room" v-if="li.type === 'input'" :placeholder="li.text">
+      <input type="password" v-model="password" v-else-if="li.type === 'password'" :placeholder="li.text">
+      <input type="password" v-model="passwordRepeat" v-else-if="li.type === 'passwordRepeat'" :placeholder="li.text">
       <span v-else-if="li.type === 'button'" class="button">{{ li.text }}</span>
       <span v-else class="info">{{ li.text }}</span>
     </li>
@@ -18,7 +19,10 @@ export default {
   data () {
     return {
       list: [ ],
-      defaultList: [ ]
+      defaultList: [ ],
+      room: '',
+      password: '',
+      passwordRepeat: ''
     }
   },
   created () {
@@ -62,12 +66,36 @@ export default {
     createRoom () {
       this.list = [
         { text: 'Password of Room', type: 'password', click: this.doNothing },
-        { text: 'Confirm Password', type: 'password', click: this.doNothing },
+        { text: 'Confirm Password', type: 'passwordRepeat', click: this.doNothing },
         { text: 'Create', type: 'button', click: this.create },
         { text: 'Back', type: 'button', click: this.back }
       ]
     },
-    create () { },
+    async create () {
+      try {
+        if (!this.password || !this.passwordRepeat || this.password !== this.passwordRepeat) {
+          return
+        }
+        const response = await fetch('http://localhost:3000/api/room/', {
+          method: 'post',
+          headers: new Headers({
+            "Content-Type": "application/json; charset=utf-8",
+          }),
+          body: JSON.stringify({
+            password: this.password
+          })
+        })
+        const result = await response.json();
+        this.list = [
+          { text: result.message, type: 'info', click: this.doNothing },
+          { text: result.id, type: 'info', click: this.doNothing },
+          { text: 'Go To Room', type: 'button', click: this.create },
+          { text: 'Back', type: 'button', click: this.back }
+        ]
+      } catch (e) {
+        console.log(e)
+      }
+    },
     back () {
       this.list = this.defaultList
     },
@@ -116,6 +144,7 @@ ul {
       }
       .info {
         color: #009900;
+        cursor: text;
       }
       @media (min-width: 768px) {
         width: 65%;
@@ -152,6 +181,7 @@ ul {
       }
       .info {
         color: #009900;
+        cursor: text;
       }
       @media (min-width: 768px) {
         width: calc(25% - 36px);
