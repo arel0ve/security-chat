@@ -18,7 +18,7 @@ router.get('/:room', async function(req, res, next) {
 
     let room = await Room.findOne({_id: req.params.room});
 
-    if (room.password !== req.query.password) {
+    if (!room.checkPassword(req.query.password)) {
       res.status(401).json({
         message: 'Wrong password',
         messages: []

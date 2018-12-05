@@ -30,7 +30,6 @@
 
 <script>
 import MainMenu from '../components/MainMenu'
-import _ from 'lodash'
 
 export default {
   name: 'chat',
@@ -61,7 +60,7 @@ export default {
       const password = window.prompt(`Input password of ${this.room.id} room`, '')
       if (!password) {
         this.$router.push('/')
-        if (ws) {
+        if (this.ws) {
           this.ws.close(1000, JSON.stringify({ room: this.room.id }))
           this.ws = null
         }
@@ -73,7 +72,7 @@ export default {
         this.room = { id: result.id, password: this.password }
       } else {
         this.$router.push('/')
-        if (ws) {
+        if (this.ws) {
           this.ws.close(1000, JSON.stringify({ room: this.room.id }))
           this.ws = null
         }
