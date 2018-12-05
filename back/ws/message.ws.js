@@ -15,19 +15,21 @@ wss.on('connection', (ws, req) => {
       if (!room) {
         room = {
           room: msg.room,
-          connections: []
+          connections: [],
+          watchers: []
         };
         connectedRooms.push(room);
       }
       if (!_.find(room.connections, ws)) {
         room.connections.push(ws);
+        room.watchers.push({ username: msg.username, IP: req.connection.remoteAddress });
       }
       room.connections.forEach(connectedWs => {
         if (connectedWs.readyState === 1) {
           connectedWs.send(JSON.stringify({
             action: 'new_user',
             connected: room.connections.length,
-            new_ip: req.connection.remoteAddress
+            watchers: room.watchers
           }))
         }
       });
@@ -51,12 +53,14 @@ wss.on('connection', (ws, req) => {
       msg = JSON.parse(msg);
       const room = _.find(connectedRooms, {room: msg.room});
       _.pull(room.connections, ws);
+      _.pullAllBy(room.watchers, [{ IP: req.connection.remoteAddress }], 'IP');
       room.connections.forEach(connectedWs => {
         if (connectedWs.readyState === 1) {
           connectedWs.send(JSON.stringify({
             action: 'removed_user',
             connected: room.connections.length,
-            old_ip: req.connection.remoteAddress
+            watchers: room.watchers,
+            oldIP: req.connection.remoteAddress
           }))
         }
       });

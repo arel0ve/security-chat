@@ -2,12 +2,18 @@
   <div>
     <MainMenu mode="menu"/>
     <div class="room-head">
-      <div class="head-label">Chat ID:&nbsp;</div>
+      <div class="head-label">Chat ID:</div>
       <div class="head-data">{{room.id }}</div>
-      <div class="head-label">Connected IP:&nbsp;</div>
-      <div class="head-data"
+      <div class="head-label pseudo-link" @click="toggleIPs">Connected IP:</div>
+      <div class="head-data pseudo-link" @click="toggleIPs"
            :class="{ 'non-stable-ips': stableIPs === false, 'very-stable-ips': stableIPs === true }">
         {{connected}}
+      </div>
+    </div>
+    <div v-if="showIPs">
+      <div v-for="(IP, index) of IPs" :key="index" class="connected-ips">
+        <div class="connected-username">{{ IP.username + ':' }}</div>
+        <div class="connected-ip">{{ IP.IP }}</div>
       </div>
     </div>
     <div class="current-message">
@@ -24,6 +30,7 @@
 
 <script>
 import MainMenu from '../components/MainMenu'
+import _ from 'lodash'
 
 export default {
   name: 'chat',
@@ -40,6 +47,8 @@ export default {
       },
       connected: 0,
       stableIPs: null,
+      IPs: [],
+      showIPs: false,
       messages: [ ],
       ws: null
     }
@@ -52,6 +61,10 @@ export default {
       const password = window.prompt(`Input password of ${this.room.id} room`, '')
       if (!password) {
         this.$router.push('/')
+        if (ws) {
+          this.ws.close(1000, JSON.stringify({ room: this.room.id }))
+          this.ws = null
+        }
       }
       const response = await fetch(`http://localhost:3000/api/room/${this.room.id}?password=${password}`)
       const result = await response.json()
@@ -60,6 +73,10 @@ export default {
         this.room = { id: result.id, password: this.password }
       } else {
         this.$router.push('/')
+        if (ws) {
+          this.ws.close(1000, JSON.stringify({ room: this.room.id }))
+          this.ws = null
+        }
       }
     }
     this.messages = await this.$store.dispatch('getMessages', this.room.id)
@@ -67,6 +84,7 @@ export default {
     this.ws.onopen = () => {
       this.ws.send(JSON.stringify({
         action: 'connect',
+        username: this.username,
         room: this.room.id
       }))
     }
@@ -74,6 +92,7 @@ export default {
       res = JSON.parse(res.data)
       if (res.action === 'message') {
         this.messages.push({
+          action: 'message',
           from: res.from,
           text: res.text,
           date: res.date
@@ -81,8 +100,10 @@ export default {
         this.stableIPs = null
       } else if (res.action === 'new_user') {
         this.stableIPs = false
+        this.IPs = res.watchers
       } else if (res.action === 'removed_user') {
         this.stableIPs = true
+        this.IPs = res.watchers
       }
       this.connected = res.connected
     }
@@ -96,6 +117,9 @@ export default {
     this.ws = null
   },
   methods: {
+    toggleIPs () {
+      this.showIPs = !this.showIPs
+    },
     async sendMessage () {
       this.ws.send(JSON.stringify({
         action: 'no_save',
@@ -115,15 +139,34 @@ export default {
   grid-template-columns: 1fr 1fr;
   .head-label {
     text-align: right;
+    padding-right: 6px;
   }
   .head-data {
     text-align: left;
+    padding-left: 6px;
   }
   .non-stable-ips {
     color: red;
   }
   .very-stable-ips {
     color: blue;
+  }
+  .pseudo-link {
+    cursor: pointer;
+    text-decoration: underline;
+  }
+}
+.connected-ips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  .connected-username {
+    text-align: right;
+    padding-right: 6px;
+    color: #009900;
+  }
+  .connected-ip {
+    text-align: left;
+    padding-left: 6px;
   }
 }
 .current-message {
