@@ -90,11 +90,13 @@ export default {
     this.ws.onmessage = res => {
       res = JSON.parse(res.data)
       if (res.action === 'message') {
-        this.messages.push({
-          action: 'message',
-          from: res.from,
-          text: res.text,
-          date: res.date
+        this.$store.commit('addMessage', {
+          id: this.room.id,
+          message: {
+            from: res.from,
+            text: res.text,
+            date: res.date
+          }
         })
         this.stableIPs = null
       } else if (res.action === 'new_user') {

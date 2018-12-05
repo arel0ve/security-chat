@@ -82,6 +82,13 @@ export default new Vuex.Store({
         return
       }
       state.rooms.push({ id, password })
+    },
+    addMessage (state, { id, message }) {
+      const room = _.find(state.rooms, { id })
+      if (!room.messages) {
+        room.messages = []
+      }
+      room.messages.push(message)
     }
   },
   actions: {
@@ -92,6 +99,9 @@ export default new Vuex.Store({
       const room = _.find(context.state.rooms, { id })
       if (!room || !room.password) {
         return
+      }
+      if (room.messages && room.messages.length) {
+        return room.messages
       }
       const response = await fetch(`http://localhost:3000/api/messages/${room.id}?password=${room.password}&from=0&to=10`)
       const result = await response.json()
