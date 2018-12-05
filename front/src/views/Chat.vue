@@ -4,7 +4,7 @@
     <h3>{{ 'Chat ' + $route.params.id }}</h3>
     <div class="current-message">
       <div>{{ username + ' >'}}</div>
-      <input type="text" v-model="message">
+      <input type="text" v-model="message" @keypress.enter="sendMessage">
     </div>
     <div v-for="message of messages" class="old-messages">
       <div class="message-from">{{ message.from + ' >'}}</div>
@@ -45,13 +45,24 @@ export default {
       const response = await fetch(`http://localhost:3000/api/room/${this.room.id}?password=${password}`)
       const result = await response.json()
       if (result.id) {
-        this.$store.commit('addRoom', { id: result.id, password: this.password })
+        this.$store.commit('addRoom', { id: result.id, password })
         this.room = { id: result.id, password: this.password }
       } else {
         this.$router.push('/')
       }
     }
     this.messages = await this.$store.dispatch('getMessages', this.room.id)
+  },
+  methods: {
+    sendMessage () {
+      this.messages.push({
+        from: this.username,
+        text: this.message,
+        date: Date.now()
+      });
+      this.message = ''
+      console.log(this.messages)
+    }
   }
 }
 </script>

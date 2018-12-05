@@ -93,9 +93,9 @@ export default new Vuex.Store({
       if (!room || !room.password) {
         return
       }
-      const response = await fetch(`http://localhost:3000/api/messages/?password=${room.password}&from=0&to=10`)
-      const messages = await response.json()
-      room.messages = messages
+      const response = await fetch(`http://localhost:3000/api/messages/${room.id}?password=${room.password}&from=0&to=10`)
+      const result = await response.json()
+      room.messages = result.messages
       return room.messages
     }
   }
