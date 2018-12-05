@@ -5,7 +5,10 @@
       <div class="head-label">Chat ID:&nbsp;</div>
       <div class="head-data">{{room.id }}</div>
       <div class="head-label">Connected IP:&nbsp;</div>
-      <div class="head-data" :class="{ 'non-stable-ips': !stableIPs }">{{connected}}</div>
+      <div class="head-data"
+           :class="{ 'non-stable-ips': stableIPs === false, 'very-stable-ips': stableIPs === true }">
+        {{connected}}
+      </div>
     </div>
     <div class="current-message">
       <label for="message" >{{ username + ' >'}}</label>
@@ -36,7 +39,7 @@ export default {
         password: ''
       },
       connected: 0,
-      stableIPs: true,
+      stableIPs: null,
       messages: [ ],
       ws: null
     }
@@ -75,9 +78,11 @@ export default {
           text: res.text,
           date: res.date
         })
-        this.stableIPs = true
+        this.stableIPs = null
       } else if (res.action === 'new_user') {
         this.stableIPs = false
+      } else if (res.action === 'removed_user') {
+        this.stableIPs = true
       }
       this.connected = res.connected
     }
@@ -116,6 +121,9 @@ export default {
   }
   .non-stable-ips {
     color: red;
+  }
+  .very-stable-ips {
+    color: blue;
   }
 }
 .current-message {

@@ -27,20 +27,20 @@ wss.on('connection', (ws, req) => {
           connectedWs.send(JSON.stringify({
             action: 'new_user',
             connected: room.connections.length,
-            new_ip: req.connection.remoteAddress,
-            date: Date.now()
+            new_ip: req.connection.remoteAddress
           }))
         }
       });
     } else {
       room.connections.forEach(connectedWs => {
         if (connectedWs.readyState === 1) {
+          let time = new Date(Date.now()).toTimeString().split(' ')[0];
           connectedWs.send(JSON.stringify({
             action: 'message',
             connected: room.connections.length,
             from: msg.from,
             text: msg.text,
-            date: Date.now()
+            date: time
           }))
         }
       });
@@ -56,8 +56,7 @@ wss.on('connection', (ws, req) => {
           connectedWs.send(JSON.stringify({
             action: 'removed_user',
             connected: room.connections.length,
-            old_ip: req.connection.remoteAddress,
-            date: Date.now()
+            old_ip: req.connection.remoteAddress
           }))
         }
       });
