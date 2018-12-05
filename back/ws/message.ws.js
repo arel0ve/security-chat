@@ -7,7 +7,7 @@ const _ = require('lodash');
 
 const connectedRooms = [];
 
-wss.on('connection', ws => {
+wss.on('connection', (ws, req) => {
   ws.on('message', msg => {
     msg = JSON.parse(msg);
     let room = _.find(connectedRooms, {room: msg.room});
@@ -26,6 +26,8 @@ wss.on('connection', ws => {
         if (connectedWs.readyState === 1) {
           connectedWs.send(JSON.stringify({
             action: 'new_user',
+            connected: room.connections.length,
+            new_ip: req.connection.remoteAddress,
             date: Date.now()
           }))
         }
@@ -34,6 +36,8 @@ wss.on('connection', ws => {
       room.connections.forEach(connectedWs => {
         if (connectedWs.readyState === 1) {
           connectedWs.send(JSON.stringify({
+            action: 'message',
+            connected: room.connections.length,
             from: msg.from,
             text: msg.text,
             date: Date.now()
@@ -47,6 +51,16 @@ wss.on('connection', ws => {
       msg = JSON.parse(msg);
       const room = _.find(connectedRooms, {room: msg.room});
       _.pull(room.connections, ws);
+      room.connections.forEach(connectedWs => {
+        if (connectedWs.readyState === 1) {
+          connectedWs.send(JSON.stringify({
+            action: 'removed_user',
+            connected: room.connections.length,
+            old_ip: req.connection.remoteAddress,
+            date: Date.now()
+          }))
+        }
+      });
     }
   });
 });

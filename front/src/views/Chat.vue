@@ -1,10 +1,15 @@
 <template>
   <div>
     <MainMenu mode="menu"/>
-    <h3>{{ 'Chat ' + $route.params.id }}</h3>
+    <div class="room-head">
+      <div class="head-label">Chat ID:&nbsp;</div>
+      <div class="head-data">{{room.id }}</div>
+      <div class="head-label">Connected IP:&nbsp;</div>
+      <div class="head-data" :class="{ 'non-stable-ips': !stableIPs }">{{connected}}</div>
+    </div>
     <div class="current-message">
-      <div>{{ username + ' >'}}</div>
-      <input type="text" v-model="message" @keypress.enter="sendMessage">
+      <label for="message" >{{ username + ' >'}}</label>
+      <input type="text" id="message" v-model="message" @keypress.enter="sendMessage">
     </div>
     <div v-for="(message, index) of messages" :key="index" class="old-messages">
       <div class="message-from">{{ message.from + ' >'}}</div>
@@ -30,6 +35,8 @@ export default {
         id: '',
         password: ''
       },
+      connected: 0,
+      stableIPs: true,
       messages: [ ],
       ws: null
     }
@@ -62,14 +69,26 @@ export default {
     }
     this.ws.onmessage = res => {
       res = JSON.parse(res.data)
-      if (res.action !== 'new_user') {
+      if (res.action === 'message') {
         this.messages.push({
           from: res.from,
           text: res.text,
           date: res.date
         })
+        this.stableIPs = true
+      } else if (res.action === 'new_user') {
+        this.stableIPs = false
       }
+      this.connected = res.connected
     }
+    window.onunload = () => {
+      this.ws.close(1000, JSON.stringify({ room: this.room.id }))
+      this.ws = null
+    }
+  },
+  destroyed () {
+    this.ws.close(1000, JSON.stringify({ room: this.room.id }))
+    this.ws = null
   },
   methods: {
     async sendMessage () {
@@ -86,20 +105,19 @@ export default {
 </script>
 
 <style scoped lang="scss">
-  hr {
-    border: none;
-    border-top: 1px solid #007700;
-    color: #009900;
-    overflow: visible;
-    text-align: center;
-    &::after {
-      content: '⋱ settings ⋰';
-      background: #000;
-      position: relative;
-      padding: 0 4px;
-      top: -11px;
-    }
+.room-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  .head-label {
+    text-align: right;
   }
+  .head-data {
+    text-align: left;
+  }
+  .non-stable-ips {
+    color: red;
+  }
+}
 .current-message {
   display: grid;
   grid-auto-columns: auto;
