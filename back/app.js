@@ -9,6 +9,7 @@ const mongoose = require('mongoose');
 const config = require('./config/config');
 
 const roomRouter = require('./routes/room.router');
+const messageRouter = require('./routes/message.router');
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/room', roomRouter);
+app.use('/api/messages', messageRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

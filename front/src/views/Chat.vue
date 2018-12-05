@@ -3,8 +3,13 @@
     <MainMenu mode="menu"/>
     <h3>{{ 'Chat ' + $route.params.id }}</h3>
     <div class="current-message">
-      <span>{{ username + ' >'}}</span>
+      <div>{{ username + ' >'}}</div>
       <input type="text" v-model="message">
+    </div>
+    <div v-for="message of messages" class="old-messages">
+      <div class="message-from">{{ message.from + ' >'}}</div>
+      <div class="message-text">{{ message.text }}</div>
+      <div class="message-date">{{ message.date }}</div>
     </div>
   </div>
 </template>
@@ -24,14 +29,14 @@ export default {
       room: {
         id: '',
         password: ''
-      }
+      },
+      messages: [ ]
     }
   },
   async created () {
     this.username = this.$store.getters.getUsername
     this.room.id = this.$route.params.id
     let verifiedRoom = await this.$store.dispatch('getRoom', this.room.id)
-    console.log(verifiedRoom)
     if (!verifiedRoom) {
       const password = window.prompt(`Input password of ${this.room.id} room`, '')
       if (!password) {
@@ -46,6 +51,7 @@ export default {
         this.$router.push('/')
       }
     }
+    this.messages = await this.$store.dispatch('getMessages', this.room.id)
   }
 }
 </script>
@@ -84,6 +90,26 @@ export default {
     &:focus {
       outline: 0;
     }
+  }
+}
+.old-messages {
+  display: grid;
+  grid-auto-columns: auto;
+  grid-template-columns: 1fr 2fr 1fr;
+  margin: 12px 0;
+  text-align: left;
+  grid-gap: 4px;
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 4fr 1fr;
+  }
+  @media (min-width: 992px) {
+    grid-template-columns: 1fr 6fr 1fr;
+  }
+  .message-text {
+    text-align: justify;
+  }
+  .message-date {
+    text-align: right;
   }
 }
 </style>

@@ -87,6 +87,16 @@ export default new Vuex.Store({
   actions: {
     getRoom (context, id) {
       return _.find(context.state.rooms, { id })
+    },
+    async getMessages (context, id) {
+      const room = _.find(context.state.rooms, { id })
+      if (!room || !room.password) {
+        return
+      }
+      const response = await fetch(`http://localhost:3000/api/messages/?password=${room.password}&from=0&to=10`)
+      const messages = await response.json()
+      room.messages = messages
+      return room.messages
     }
   }
 })
