@@ -6,7 +6,7 @@
       <div>{{ username + ' >'}}</div>
       <input type="text" v-model="message" @keypress.enter="sendMessage">
     </div>
-    <div v-for="message of messages" class="old-messages">
+    <div v-for="(message, index) of messages" :key="index" class="old-messages">
       <div class="message-from">{{ message.from + ' >'}}</div>
       <div class="message-text">{{ message.text }}</div>
       <div class="message-date">{{ message.date }}</div>
@@ -30,7 +30,8 @@ export default {
         id: '',
         password: ''
       },
-      messages: [ ]
+      messages: [ ],
+      ws: null
     }
   },
   async created () {
@@ -52,16 +53,33 @@ export default {
       }
     }
     this.messages = await this.$store.dispatch('getMessages', this.room.id)
+    this.ws = new WebSocket('ws://localhost:40510')
+    this.ws.onopen = () => {
+      this.ws.send(JSON.stringify({
+        action: 'connect',
+        room: this.room.id
+      }))
+    }
+    this.ws.onmessage = res => {
+      res = JSON.parse(res.data)
+      if (res.action !== 'new_user') {
+        this.messages.push({
+          from: res.from,
+          text: res.text,
+          date: res.date
+        })
+      }
+    }
   },
   methods: {
-    sendMessage () {
-      this.messages.push({
+    async sendMessage () {
+      this.ws.send(JSON.stringify({
+        action: 'no_save',
+        room: this.room.id,
         from: this.username,
-        text: this.message,
-        date: Date.now()
-      });
+        text: this.message
+      }))
       this.message = ''
-      console.log(this.messages)
     }
   }
 }

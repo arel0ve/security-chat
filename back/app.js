@@ -11,6 +11,8 @@ const config = require('./config/config');
 const roomRouter = require('./routes/room.router');
 const messageRouter = require('./routes/message.router');
 
+const ws = require('./ws/message.ws');
+
 const app = express();
 
 // view engine setup

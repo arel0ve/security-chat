@@ -16,7 +16,7 @@ router.get('/:room', async function(req, res, next) {
     const from = req.query.from ? +req.query.from : 0;
     const limit = req.query.limit ? + req.query.limit : 10;
 
-    let room = await Room.find({_id: req.params.room});
+    let room = await Room.findOne({_id: req.params.room});
 
     if (room.password !== req.query.password) {
       res.status(401).json({
