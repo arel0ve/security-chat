@@ -98,6 +98,11 @@ export default {
             date: res.date
           }
         })
+        this.messages.push({
+          from: res.from,
+          text: res.text,
+          date: res.date
+        })
         this.stableIPs = null
       } else if (res.action === 'new_user') {
         this.stableIPs = false

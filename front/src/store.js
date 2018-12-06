@@ -81,7 +81,7 @@ export default new Vuex.Store({
       if (_.find(state.rooms, { id })) {
         return
       }
-      if (store !== 'app') {
+      if (store !== 'app' && !window.localStorage.getItem(`room-${id}`)) {
         window.localStorage.setItem(`room-${id}`, JSON.stringify([]))
       }
       state.rooms.push({ id, password })
@@ -91,7 +91,7 @@ export default new Vuex.Store({
       if (!room.messages) {
         room.messages = []
       }
-      let messagesFromLocalStorage = window.localStorage.getItem(`room-${id}`);
+      let messagesFromLocalStorage = window.localStorage.getItem(`room-${id}`)
       if (messagesFromLocalStorage) {
         messagesFromLocalStorage = JSON.parse(messagesFromLocalStorage)
         messagesFromLocalStorage.push(message)
