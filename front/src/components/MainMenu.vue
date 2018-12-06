@@ -71,7 +71,7 @@ export default {
         const response = await fetch(`http://localhost:3000/api/room/${this.room}?password=${this.password}`)
         const result = await response.json()
         if (result.id) {
-          this.$store.commit('addRoom', { id: result.id, password: this.password })
+          this.$store.commit('addRoom', { id: result.id, password: this.password, store: result.store })
           this.$router.push(`/chat/${result.id}`)
         } else {
           this.list = [
@@ -98,18 +98,23 @@ export default {
         if (!this.password || !this.passwordRepeat || this.password !== this.passwordRepeat) {
           return
         }
+        let store = this.$store.getters.getStorage
+        if (!store) {
+          store = 'app'
+        }
         const response = await fetch('http://localhost:3000/api/room/', {
           method: 'post',
           headers: new Headers({
             'Content-Type': 'application/json; charset=utf-8'
           }),
           body: JSON.stringify({
-            password: this.password
+            password: this.password,
+            store
           })
         })
         const result = await response.json()
         if (result.id) {
-          this.$store.commit('addRoom', { id: result.id, password: this.password })
+          this.$store.commit('addRoom', { id: result.id, password: this.password, store: result.store })
           this.list = [
             { text: result.message, type: 'info', click: this.doNothing },
             { text: result.id, type: 'info', click: this.doNothing },

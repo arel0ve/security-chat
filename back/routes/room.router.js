@@ -12,15 +12,21 @@ router.post('/', async function(req, res, next) {
       return;
     }
 
+    if (!req.body.store) {
+      req.body.store = 'app';
+    }
+
     let room = new Room({
-      password: req.body.password
+      password: req.body.password,
+      store: req.body.store
     });
 
     room = await room.save();
 
     res.status(200).json({
-      message: 'Created successful',
-      id: room._id
+      message: `Creating successful`,
+      id: room._id,
+      store: room.store
     });
   } catch (e) {
     res.status(500).json({
@@ -52,7 +58,8 @@ router.get('/:room', async function(req, res, next) {
 
     res.status(200).json({
       message: 'Accessed',
-      id: room._id
+      id: room._id,
+      store: room.store
     });
   } catch (e) {
     res.status(500).json({

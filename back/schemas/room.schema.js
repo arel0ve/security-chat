@@ -10,6 +10,10 @@ const roomSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  store: {
+    type: String,
+    default: 'app'
+  },
   timeForSave: {
     type: Number,
     default: 0

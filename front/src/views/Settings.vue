@@ -8,9 +8,9 @@
         <input type="text" id="username" v-model="username" @change="saveUsername" placeholder="Username">
         <label for="storage">Place of storage</label>
         <select id="storage" v-model="storage" @change="saveStorage">
-          <option>Application Store</option>
-          <option>Local Storage</option>
-          <option>Database</option>
+          <option value="app">Application Store</option>
+          <option value="local">Local Storage</option>
+          <option value="db">Database</option>
         </select>
         <label for="life" v-if="storage === 'Database'">Shelf life</label>
         <select id="life" v-if="storage === 'Database'" v-model="life" @change="saveLife">

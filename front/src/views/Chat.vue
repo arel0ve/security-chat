@@ -68,7 +68,7 @@ export default {
       const response = await fetch(`http://localhost:3000/api/room/${this.room.id}?password=${password}`)
       const result = await response.json()
       if (result.id) {
-        this.$store.commit('addRoom', { id: result.id, password })
+        this.$store.commit('addRoom', { id: result.id, password, store: result.store })
         this.room = { id: result.id, password: this.password }
       } else {
         this.$router.push('/')

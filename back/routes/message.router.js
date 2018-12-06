@@ -26,7 +26,7 @@ router.get('/:room', async function(req, res, next) {
       return;
     }
 
-    if (!room.timeForSave) {
+    if (!room.timeForSave || room.store !== 'db') {
       res.status(400).json({
         message: 'No saved messages',
         messages: []
