@@ -15,7 +15,7 @@ router.get('/:room', async function(req, res, next) {
 
     console.log(req.session);
 
-    if (!req.session[req.params.room]) {
+    if (!req.session[`room_${req.params.room}`]) {
       res.status(401).json({
         message: 'Denied',
         messages: []

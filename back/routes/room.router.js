@@ -23,6 +23,8 @@ router.post('/', async function(req, res, next) {
 
     room = await room.save();
 
+    req.session[req.params.rooms] = 'Accessed';
+
     res.status(200).json({
       message: `Creating successful`,
       id: room._id,
@@ -36,9 +38,9 @@ router.post('/', async function(req, res, next) {
   }
 });
 
-router.get('/:room', async function(req, res, next) {
+router.post('/get/:room', async function(req, res, next) {
   try {
-    if (!req.query.password || !req.params.room) {
+    if (!req.params.room || !req.body.password) {
       res.status(400).json({
         message: 'Bad request',
         id: null
@@ -48,7 +50,7 @@ router.get('/:room', async function(req, res, next) {
 
     let room = await Room.findOne({_id: req.params.room});
 
-    if (!room.checkPassword(req.query.password)) {
+    if (!room.checkPassword(req.body.password)) {
       res.status(401).json({
         message: 'Wrong password',
         id: null
@@ -56,7 +58,9 @@ router.get('/:room', async function(req, res, next) {
       return;
     }
 
-    req.session[req.params.rooms] = 'Accessed';
+    req.session[`room_${req.params.room}`] = 'Accessed';
+
+    console.log(req.session);
 
     res.status(200).json({
       message: 'Accessed',

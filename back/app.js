@@ -25,6 +25,12 @@ const ws = require('./ws/message.ws');
 
 const app = express();
 
+const corsOptions = {
+  origin: 'http://localhost:8080',
+  credentials: true
+};
+app.use(cors(corsOptions));
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
@@ -32,7 +38,6 @@ app.set('view engine', 'pug');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors());
 app.use(cookieParser());
 
 app.set('trust proxy', 1);
@@ -41,7 +46,7 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
   cookie: {
-    httpOnly: true,
+    httpOnly: false,
     secure: false
   },
   store: new MongoStore({
@@ -49,10 +54,15 @@ app.use(session({
   })
 }));
 
-app.use(express.static(path.join(__dirname, 'public')));
-
 app.use('/api/room', roomRouter);
 app.use('/api/messages', messageRouter);
+
+app.use(function (req, res, next) {
+  res.set('Cache-Control', 'public, max-age=31557600');
+  next();
+});
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

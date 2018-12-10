@@ -68,7 +68,15 @@ export default {
         if (!this.room || !this.password) {
           return
         }
-        const response = await fetch(`http://localhost:3000/api/room/${this.room}?password=${this.password}`)
+        const response = await fetch(`http://localhost:3000/api/room/get/${this.room}`, {
+          method: 'post',
+          headers: new Headers({
+            'Content-Type': 'application/json; charset=utf-8'
+          }),
+          body: JSON.stringify({
+            password: this.password,
+          })
+        })
         const result = await response.json()
         if (result.id) {
           this.$store.dispatch('addRoom', { id: result.id, password: this.password, store: result.store })
