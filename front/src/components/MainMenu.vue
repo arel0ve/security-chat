@@ -68,7 +68,7 @@ export default {
         if (!this.room || !this.password) {
           return
         }
-        const response = await fetch(`http://localhost:3000/api/room/get/${this.room}`, {
+        const response = await fetch(`http://localhost:3000/api/room/open/${this.room}`, {
           method: 'post',
           headers: new Headers({
             'Content-Type': 'application/json; charset=utf-8'

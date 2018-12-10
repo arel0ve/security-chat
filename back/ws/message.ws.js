@@ -43,8 +43,7 @@ wss.on('connection', (ws, req) => {
           room: msg.room
         });
         try {
-          let m = await message.save();
-          console.log(m);
+          await message.save();
         } catch (e) {
           console.log(e);
         }

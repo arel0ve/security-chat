@@ -67,7 +67,7 @@ export default {
       return
     }
     this.room.store = verifiedRoom.store
-    this.messages = await this.$store.dispatch('getMessages', this.room.id)
+    this.messages = verifiedRoom.messages
     this.ws = new WebSocket('ws://localhost:40510')
     this.ws.onopen = () => {
       this.ws.send(JSON.stringify({

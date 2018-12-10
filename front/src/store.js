@@ -76,23 +76,37 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    getRoom (context, id) {
+    async getRoom (context, id) {
       let room = _.find(context.state.rooms, { id })
       if (!room) {
         room = JSON.parse(window.localStorage.getItem(`room-${id}`))
         if (room) {
           room.id = id
           context.dispatch('addRoom', room)
+        } else {
+          const response = await fetch(`http://localhost:3000/api/room/visit/${id}`)
+          const result = await response.json()
+          if (result.id) {
+            room = {
+              id: result.id,
+              store: result.store,
+              messages: []
+            }
+            if (result.messages) {
+              room.messages = result.messages
+            }
+            context.dispatch('addRoom', room)
+          }
         }
       }
       return room
     },
-    addRoom (context, { id, password, store = 'app', messages = [] }) {
-      if (!id || !password) {
+    addRoom (context, { id, store = 'app', messages = [] }) {
+      if (!id) {
         return
       }
       if (!_.find(context.state.rooms, { id })) {
-        context.state.rooms.push({ id, password, store, messages })
+        context.state.rooms.push({ id, store, messages })
       }
       if (store !== 'app' && !window.localStorage.getItem(`room-${id}`)) {
         window.localStorage.setItem(`room-${id}`, JSON.stringify({
@@ -101,8 +115,8 @@ export default new Vuex.Store({
         }))
       }
     },
-    addMessage (context, { id, message }) {
-      const room = context.dispatch('getRoom', id)
+    async addMessage (context, { id, message }) {
+      const room = await context.dispatch('getRoom', id)
       if (!room.messages) {
         room.messages = []
       }
@@ -132,7 +146,7 @@ export default new Vuex.Store({
       if (!room.password) {
         return []
       }
-      const response = await fetch(`http://localhost:3000/api/messages/${room.id}?from=0&to=10`)
+      const response = await fetch(`http://localhost:3000/api/messages/${room.id}?from=0&to=50`)
       const result = await response.json()
       room.messages = result.messages
       return room.messages ? room.messages : []

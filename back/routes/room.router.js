@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Room = require('../schemas/room.schema');
+const Message = require('../schemas/message.schema');
 
 router.post('/', async function(req, res, next) {
   try {
@@ -24,7 +25,6 @@ router.post('/', async function(req, res, next) {
     room = await room.save();
 
     req.session[`room_${room._id}`] = 'Accessed';
-    console.log(req.session);
 
     res.status(200).json({
       message: `Creating successful`,
@@ -39,7 +39,7 @@ router.post('/', async function(req, res, next) {
   }
 });
 
-router.post('/get/:room', async function(req, res, next) {
+router.post('/open/:room', async function(req, res, next) {
   try {
     if (!req.params.room || !req.body.password) {
       res.status(400).json({
@@ -61,13 +61,60 @@ router.post('/get/:room', async function(req, res, next) {
 
     req.session[`room_${req.params.room}`] = 'Accessed';
 
-    console.log(req.session);
-
     res.status(200).json({
       message: 'Accessed',
       id: room._id,
       store: room.store
     });
+  } catch (e) {
+    res.status(500).json({
+      message: 'Server error',
+      id: null
+    });
+  }
+});
+
+router.get('/visit/:room', async function(req, res, next) {
+  try {
+    if (!req.params.room) {
+      res.status(400).json({
+        message: 'Bad request',
+        id: null
+      });
+      return;
+    }
+
+    if (req.session[`room_${req.params.room}`] !== 'Accessed') {
+      res.status(401).json({
+        message: 'Not authorized',
+        id: null
+      });
+      return;
+    }
+
+    const room = await Room.findOne({_id: req.params.room});
+
+    if (room.store !== 'db') {
+      res.status(200).json({
+        message: 'Accessed',
+        id: room._id,
+        store: room.store
+      });
+      return;
+    }
+
+    const messages = await Message.find({room: room._id})
+        .select('from text date -_id')
+        .sort('-date')
+        .limit(50);
+
+    res.status(200).json({
+      message: 'Accessed',
+      id: room._id,
+      store: room.store,
+      messages
+    })
+
   } catch (e) {
     res.status(500).json({
       message: 'Server error',
