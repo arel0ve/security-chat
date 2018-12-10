@@ -58,7 +58,8 @@ export default {
     this.room.id = this.$route.params.id
     let verifiedRoom = await this.$store.dispatch('getRoom', this.room.id)
     if (!verifiedRoom) {
-      window.alert(`You don't add ${this.room.id} room to your storage. \n You can make it from menu.`)
+      window.alert(`Room ${this.room.id} Is not yet opened for you. \n
+      You can go to this room from main menu if you know password.`)
       this.$router.push('/')
       if (this.ws) {
         this.ws.close(1000, JSON.stringify({ room: this.room.id }))
@@ -88,6 +89,7 @@ export default {
             date: res.date
           }
         })
+        console.log(322)
         this.messages.push({
           from: res.from,
           text: res.text,
@@ -120,7 +122,7 @@ export default {
     },
     async sendMessage () {
       this.ws.send(JSON.stringify({
-        action: 'no_save',
+        action: 'message',
         room: this.room.id,
         store: this.room.store,
         from: this.username,

@@ -59,11 +59,11 @@ export default {
       this.list = [
         { text: 'Room ID', type: 'input', click: this.doNothing },
         { text: 'Password of Room', type: 'password', click: this.doNothing },
-        { text: 'Visit', type: 'button', click: this.visit },
+        { text: 'Visit', type: 'button', click: this.open },
         { text: 'Back', type: 'button', click: this.back }
       ]
     },
-    async visit () {
+    async open () {
       try {
         if (!this.room || !this.password) {
           return
