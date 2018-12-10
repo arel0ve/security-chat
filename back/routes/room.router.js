@@ -23,7 +23,8 @@ router.post('/', async function(req, res, next) {
 
     room = await room.save();
 
-    req.session[req.params.rooms] = 'Accessed';
+    req.session[`room_${room._id}`] = 'Accessed';
+    console.log(req.session);
 
     res.status(200).json({
       message: `Creating successful`,

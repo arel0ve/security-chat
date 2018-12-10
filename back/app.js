@@ -18,6 +18,7 @@ mongoose.connection
 
 const MongoStore = require('connect-mongo')(session);
 
+const indexRouter = require('./routes/index.router');
 const roomRouter = require('./routes/room.router');
 const messageRouter = require('./routes/message.router');
 
@@ -46,7 +47,7 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
   cookie: {
-    httpOnly: false,
+    httpOnly: true,
     secure: false
   },
   store: new MongoStore({
@@ -57,12 +58,8 @@ app.use(session({
 app.use('/api/room', roomRouter);
 app.use('/api/messages', messageRouter);
 
-app.use(function (req, res, next) {
-  res.set('Cache-Control', 'public, max-age=31557600');
-  next();
-});
-
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../front/dist/')));
+app.use('*', indexRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

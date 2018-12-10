@@ -74,7 +74,7 @@ export default {
             'Content-Type': 'application/json; charset=utf-8'
           }),
           body: JSON.stringify({
-            password: this.password,
+            password: this.password
           })
         })
         const result = await response.json()
