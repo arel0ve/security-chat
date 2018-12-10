@@ -11,7 +11,7 @@ export default new Vuex.Store({
       storage: '',
       lifeDays: 0
     },
-    rooms: [ ]
+    rooms: []
   },
   getters: {
     getUsername (state) {
@@ -73,52 +73,69 @@ export default new Vuex.Store({
           break
       }
       window.localStorage.setItem('lifeDays', state.options.lifeDays)
+    }
+  },
+  actions: {
+    getRoom (context, id) {
+      let room = _.find(context.state.rooms, { id })
+      if (!room) {
+        room = JSON.parse(window.localStorage.getItem(`room-${id}`))
+        if (room) {
+          room.id = id
+          context.dispatch('addRoom', room)
+        }
+      }
+      return room
     },
-    addRoom (state, { id, password, store = 'app' }) {
+    addRoom (context, { id, password, store = 'app', messages = [] }) {
       if (!id || !password) {
         return
       }
-      if (_.find(state.rooms, { id })) {
-        return
+      if (!_.find(context.state.rooms, { id })) {
+        context.state.rooms.push({ id, password, store, messages })
       }
       if (store !== 'app' && !window.localStorage.getItem(`room-${id}`)) {
-        window.localStorage.setItem(`room-${id}`, JSON.stringify([]))
+        window.localStorage.setItem(`room-${id}`, JSON.stringify({
+          store,
+          messages
+        }))
       }
-      state.rooms.push({ id, password })
     },
-    addMessage (state, { id, message }) {
-      const room = _.find(state.rooms, { id })
+    addMessage (context, { id, message }) {
+      const room = context.dispatch('getRoom', id)
       if (!room.messages) {
         room.messages = []
       }
       let messagesFromLocalStorage = window.localStorage.getItem(`room-${id}`)
       if (messagesFromLocalStorage) {
         messagesFromLocalStorage = JSON.parse(messagesFromLocalStorage)
-        messagesFromLocalStorage.push(message)
+        messagesFromLocalStorage.messages.push(message)
         window.localStorage.setItem(`room-${id}`, JSON.stringify(messagesFromLocalStorage))
       }
       room.messages.push(message)
-    }
-  },
-  actions: {
-    getRoom (context, id) {
-      return _.find(context.state.rooms, { id })
+    },
+    async getStoreOfRoom (context, id) {
+      let room = await context.dispatch('getRoom', id)
+      if (!room) {
+        room = window.localStorage.getItem(`room-${id}`)
+      }
+      return room.store ? room.store : 'app'
     },
     async getMessages (context, id) {
-      const room = _.find(context.state.rooms, { id })
-      if (!room || !room.password) {
-        return
+      const room = await context.dispatch('getRoom', id)
+      if (!room) {
+        return []
       }
       if (room.messages && room.messages.length) {
         return room.messages
       }
-      if (window.localStorage.getItem(`room-${id}`)) {
-        return JSON.parse(window.localStorage.getItem(`room-${id}`))
+      if (!room.password) {
+        return []
       }
-      const response = await fetch(`http://localhost:3000/api/messages/${room.id}?password=${room.password}&from=0&to=10`)
+      const response = await fetch(`http://localhost:3000/api/messages/${room.id}?from=0&to=10`)
       const result = await response.json()
       room.messages = result.messages
-      return room.messages
+      return room.messages ? room.messages : []
     }
   }
 })

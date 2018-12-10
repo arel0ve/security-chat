@@ -56,6 +56,8 @@ router.get('/:room', async function(req, res, next) {
       return;
     }
 
+    req.session[req.params.rooms] = 'Accessed';
+
     res.status(200).json({
       message: 'Accessed',
       id: room._id,

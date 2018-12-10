@@ -5,9 +5,19 @@ const Message = require('../schemas/message.schema');
 
 router.get('/:room', async function(req, res, next) {
   try {
-    if (!req.query.password || !req.params.room) {
+    if (!req.params.room) {
       res.status(400).json({
         message: 'Bad request',
+        messages: []
+      });
+      return;
+    }
+
+    console.log(req.session);
+
+    if (!req.session[req.params.room]) {
+      res.status(401).json({
+        message: 'Denied',
         messages: []
       });
       return;
@@ -18,15 +28,7 @@ router.get('/:room', async function(req, res, next) {
 
     let room = await Room.findOne({_id: req.params.room});
 
-    if (!room.checkPassword(req.query.password)) {
-      res.status(401).json({
-        message: 'Wrong password',
-        messages: []
-      });
-      return;
-    }
-
-    if (!room.timeForSave || room.store !== 'db') {
+    if (room.store !== 'db') {
       res.status(400).json({
         message: 'No saved messages',
         messages: []
@@ -35,7 +37,7 @@ router.get('/:room', async function(req, res, next) {
     }
 
     const messages = await Message.find({room: req.params.room})
-        .select('messages', 'from text date -_id')
+        .select('from text date -_id')
         .sort('-date')
         .skip(from)
         .limit(limit);

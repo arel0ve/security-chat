@@ -71,7 +71,7 @@ export default {
         const response = await fetch(`http://localhost:3000/api/room/${this.room}?password=${this.password}`)
         const result = await response.json()
         if (result.id) {
-          this.$store.commit('addRoom', { id: result.id, password: this.password, store: result.store })
+          this.$store.dispatch('addRoom', { id: result.id, password: this.password, store: result.store })
           this.$router.push(`/chat/${result.id}`)
         } else {
           this.list = [
@@ -114,7 +114,7 @@ export default {
         })
         const result = await response.json()
         if (result.id) {
-          this.$store.commit('addRoom', { id: result.id, password: this.password, store: result.store })
+          this.$store.dispatch('addRoom', { id: result.id, password: this.password, store: result.store })
           this.list = [
             { text: result.message, type: 'info', click: this.doNothing },
             { text: result.id, type: 'info', click: this.doNothing },

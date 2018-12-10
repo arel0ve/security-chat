@@ -8,7 +8,7 @@ const _ = require('lodash');
 const connectedRooms = [];
 
 wss.on('connection', (ws, req) => {
-  ws.on('message', msg => {
+  ws.on('message', async msg => {
     msg = JSON.parse(msg);
     let room = _.find(connectedRooms, {room: msg.room});
     if (msg.action === 'connect') {
@@ -34,6 +34,21 @@ wss.on('connection', (ws, req) => {
         }
       });
     } else {
+      if (msg.store === 'db') {
+        let from = msg.from ? msg.from : 'unknown';
+        const message = new Message({
+          from,
+          text: msg.text,
+          date: new Date(Date.now()),
+          room: msg.room
+        });
+        try {
+          let m = await message.save();
+          console.log(m);
+        } catch (e) {
+          console.log(e);
+        }
+      }
       room.connections.forEach(connectedWs => {
         if (connectedWs.readyState === 1) {
           let time = new Date(Date.now()).toTimeString().split(' ')[0];

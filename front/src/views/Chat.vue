@@ -42,7 +42,8 @@ export default {
       message: '',
       room: {
         id: '',
-        password: ''
+        password: '',
+        store: 'app'
       },
       connected: 0,
       stableIPs: null,
@@ -57,32 +58,21 @@ export default {
     this.room.id = this.$route.params.id
     let verifiedRoom = await this.$store.dispatch('getRoom', this.room.id)
     if (!verifiedRoom) {
-      const password = window.prompt(`Input password of ${this.room.id} room`, '')
-      if (!password) {
-        this.$router.push('/')
-        if (this.ws) {
-          this.ws.close(1000, JSON.stringify({ room: this.room.id }))
-          this.ws = null
-        }
+      window.alert(`You don't add ${this.room.id} room to your storage. \n You can make it from menu.`)
+      this.$router.push('/')
+      if (this.ws) {
+        this.ws.close(1000, JSON.stringify({ room: this.room.id }))
+        this.ws = null
       }
-      const response = await fetch(`http://localhost:3000/api/room/${this.room.id}?password=${password}`)
-      const result = await response.json()
-      if (result.id) {
-        this.$store.commit('addRoom', { id: result.id, password, store: result.store })
-        this.room = { id: result.id, password: this.password }
-      } else {
-        this.$router.push('/')
-        if (this.ws) {
-          this.ws.close(1000, JSON.stringify({ room: this.room.id }))
-          this.ws = null
-        }
-      }
+      return
     }
+    this.room.store = verifiedRoom.store
     this.messages = await this.$store.dispatch('getMessages', this.room.id)
     this.ws = new WebSocket('ws://localhost:40510')
     this.ws.onopen = () => {
       this.ws.send(JSON.stringify({
         action: 'connect',
+        store: this.room.store,
         username: this.username,
         room: this.room.id
       }))
@@ -90,7 +80,7 @@ export default {
     this.ws.onmessage = res => {
       res = JSON.parse(res.data)
       if (res.action === 'message') {
-        this.$store.commit('addMessage', {
+        this.$store.dispatch('addMessage', {
           id: this.room.id,
           message: {
             from: res.from,
@@ -119,8 +109,10 @@ export default {
     }
   },
   destroyed () {
-    this.ws.close(1000, JSON.stringify({ room: this.room.id }))
-    this.ws = null
+    if (this.ws) {
+      this.ws.close(1000, JSON.stringify({ room: this.room.id }))
+      this.ws = null
+    }
   },
   methods: {
     toggleIPs () {
@@ -130,6 +122,7 @@ export default {
       this.ws.send(JSON.stringify({
         action: 'no_save',
         room: this.room.id,
+        store: this.room.store,
         from: this.username,
         text: this.message
       }))
