@@ -123,4 +123,17 @@ router.get('/visit/:room', async function(req, res, next) {
   }
 });
 
+router.get('/opened', function(req, res, next) {
+  let rooms = [];
+  for (let attr in req.session) {
+    if (req.session.hasOwnProperty(attr) && attr.includes('room')) {
+      const room = attr.slice(5);
+      if (room && room !== 'undefined') {
+        rooms.push(room);
+      }
+    }
+  }
+  res.status(200).json(rooms);
+});
+
 module.exports = router;

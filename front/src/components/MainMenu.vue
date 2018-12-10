@@ -1,9 +1,12 @@
 <template>
   <ul :class="{'main': mode === 'main', 'menu': mode === 'menu'}">
     <li v-for="(li, index) of list" :key="index" v-on="{ click: li.click }">
-      <input type="text" v-model="room" v-if="li.type === 'input'" :placeholder="li.text">
-      <input type="password" v-model="password" v-else-if="li.type === 'password'" :placeholder="li.text">
-      <input type="password" v-model="passwordRepeat" v-else-if="li.type === 'passwordRepeat'" :placeholder="li.text">
+      <input v-if="li.type === 'input'" type="text" v-model="room" :placeholder="li.text">
+      <input v-else-if="li.type === 'password'" type="password" v-model="password" :placeholder="li.text">
+      <input v-else-if="li.type === 'passwordRepeat'" type="password" v-model="passwordRepeat" :placeholder="li.text">
+      <select v-else-if="li.type === 'select'" v-model="room">
+        <option v-for="(room, index) of visitedRooms" :key="index" >{{ room }}</option>
+      </select>
       <span v-else-if="li.type === 'button'" class="button">{{ li.text }}</span>
       <span v-else-if="li.type === 'info'" class="info">{{ li.text }}</span>
       <span v-else class="error">{{ li.text }}</span>
@@ -23,20 +26,21 @@ export default {
       defaultList: [ ],
       room: '',
       password: '',
-      passwordRepeat: ''
+      passwordRepeat: '',
+      visitedRooms: [ ]
     }
   },
   created () {
     if (this.$route.path === '/about') {
       this.defaultList = [
-        { text: 'Settings', type: 'button', click: this.settings },
+        { text: 'Choose Visited Room', type: 'button', click: this.chooseRoom },
         { text: 'Go To Room', type: 'button', click: this.toRoom },
         { text: 'Create New Room', type: 'button', click: this.createRoom },
-        { text: 'Main', type: 'button', click: this.main }
+        { text: 'Settings', type: 'button', click: this.settings }
       ]
     } else if (this.$route.path === '/settings') {
       this.defaultList = [
-        { text: 'About', type: 'button', click: this.about },
+        { text: 'Choose Visited Room', type: 'button', click: this.chooseRoom },
         { text: 'Go To Room', type: 'button', click: this.toRoom },
         { text: 'Create New Room', type: 'button', click: this.createRoom },
         { text: 'Main', type: 'button', click: this.main }
@@ -44,9 +48,9 @@ export default {
     } else {
       this.defaultList = [
         { text: 'Settings', type: 'button', click: this.settings },
-        { text: 'Go To Room', type: 'button', click: this.toRoom },
-        { text: 'Create New Room', type: 'button', click: this.createRoom },
-        { text: 'About', type: 'button', click: this.about }
+        { text: 'Choose Visited Room', type: 'button', click: this.chooseRoom },
+        { text: 'Open Unvisited Room', type: 'button', click: this.toRoom },
+        { text: 'Create New Room', type: 'button', click: this.createRoom }
       ]
     }
     this.list = this.defaultList
@@ -54,6 +58,16 @@ export default {
   methods: {
     settings () {
       this.$router.push('/settings')
+    },
+    async chooseRoom () {
+      this.list = [
+        { text: 'Your Rooms: ', type: 'info', click: this.doNothing },
+        { text: '', type: 'select', click: this.doNothing },
+        { text: 'Choose', type: 'button', click: this.doNothing },
+        { text: 'Back', type: 'button', click: this.back }
+      ]
+      const response = await fetch('http://localhost:3000/api/room/opened')
+      this.visitedRooms = await response.json()
     },
     toRoom () {
       this.list = [

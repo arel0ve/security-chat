@@ -22,6 +22,7 @@
         </select>
       </div>
     </form>
+    <router-link to="/about" class="link-about"><hr></router-link>
   </div>
 </template>
 
@@ -59,6 +60,19 @@ export default {
 </script>
 
 <style scoped lang="scss">
+hr {
+  border: none;
+  border-top: 1px solid #007700;
+  color: #009900;
+  overflow: visible;
+  text-align: center;
+  &::after {
+    background: #000;
+    position: relative;
+    padding: 0 4px;
+    top: -11px;
+  }
+}
 .settings {
   margin-top: 32px;
   width: 100%;
@@ -72,17 +86,10 @@ export default {
     left: 25%
   }
   hr {
-    border: none;
-    border-top: 1px solid #007700;
-    color: #009900;
-    overflow: visible;
-    text-align: center;
     &::after {
       content: '⋱ settings ⋰';
-      background: #000;
-      position: relative;
-      padding: 0 4px;
       top: -11px;
+      font-size: 16px;
     }
   }
   .form-content {
@@ -125,6 +132,16 @@ export default {
           outline: 0;
         }
       }
+    }
+  }
+}
+.link-about {
+  margin-top: 32px;
+  hr {
+    &::after {
+      content: '⋰ about ⋱';
+      font-size: 32px;
+      top: -19px;
     }
   }
 }

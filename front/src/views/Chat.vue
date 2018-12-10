@@ -78,10 +78,10 @@ export default {
         room: this.room.id
       }))
     }
-    this.ws.onmessage = res => {
+    this.ws.onmessage = async res => {
       res = JSON.parse(res.data)
       if (res.action === 'message') {
-        this.$store.dispatch('addMessage', {
+        await this.$store.dispatch('addMessage', {
           id: this.room.id,
           message: {
             from: res.from,
@@ -89,7 +89,6 @@ export default {
             date: res.date
           }
         })
-        console.log(322)
         this.messages.push({
           from: res.from,
           text: res.text,
