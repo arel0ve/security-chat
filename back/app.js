@@ -19,6 +19,7 @@ mongoose.connection
 const MongoStore = require('connect-mongo')(session);
 
 const indexRouter = require('./routes/index.router');
+const keyRouter = require('./routes/key.router');
 const roomRouter = require('./routes/room.router');
 const messageRouter = require('./routes/message.router');
 
@@ -55,6 +56,7 @@ app.use(session({
   })
 }));
 
+app.use('/api/key', keyRouter);
 app.use('/api/room', roomRouter);
 app.use('/api/messages', messageRouter);
 

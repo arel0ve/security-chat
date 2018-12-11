@@ -136,8 +136,9 @@ hr {
   }
 }
 .link-about {
-  margin-top: 32px;
   hr {
+    margin-top: 32px;
+    color: lime;
     &::after {
       content: '⋰ about ⋱';
       font-size: 32px;

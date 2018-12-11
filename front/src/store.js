@@ -1,8 +1,12 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import _ from 'lodash'
+import crypto from 'diffie-hellman'
 
 Vue.use(Vuex)
+
+const PRIME = 'f3df7dd339fa10e8357151eec027cb2ab2dd934d229ef9c03adc77e5701c9933';
+const GENERATOR = '02';
 
 export default new Vuex.Store({
   state: {
@@ -11,7 +15,8 @@ export default new Vuex.Store({
       storage: '',
       lifeDays: 0
     },
-    rooms: []
+    rooms: [],
+    key: ''
   },
   getters: {
     getUsername (state) {
@@ -43,6 +48,9 @@ export default new Vuex.Store({
         return 'Year'
       }
       return 'Forever'
+    },
+    getKey (state) {
+      return state.key
     }
   },
   mutations: {
@@ -150,6 +158,21 @@ export default new Vuex.Store({
       const result = await response.json()
       room.messages = result.messages
       return room.messages ? room.messages : []
+    },
+    async generateKey (context) {
+      const alice = crypto.createDiffieHellman(256)
+      alice.generateKeys()
+
+      const response = await fetch(`http://localhost:3000/api/key/generate?key=${alice.getPublicKey('hex')}&prime=${alice.getPrime('hex')}&generator=${alice.getGenerator('hex')}`)
+      const result = await response.json()
+      if (result.bobKey) {
+        const bobKey = new Uint8Array(Math.ceil(result.bobKey.length / 2))
+        for (let i = 0; i < bobKey.length; i++) bobKey[i] = parseInt(result.bobKey.substr(i * 2, 2), 16)
+
+        const secret = alice.computeSecret(bobKey)
+        context.state.key = secret
+      }
+
     }
   }
 })

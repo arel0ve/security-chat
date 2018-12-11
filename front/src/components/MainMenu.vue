@@ -30,7 +30,7 @@ export default {
       visitedRooms: [ ]
     }
   },
-  created () {
+  async created () {
     if (this.$route.path === '/about') {
       this.defaultList = [
         { text: 'Choose Visited Room', type: 'button', click: this.chooseRoom },
@@ -54,6 +54,9 @@ export default {
       ]
     }
     this.list = this.defaultList
+    if (!this.$store.getters.getKey) {
+      await this.$store.dispatch('generateKey')
+    }
   },
   methods: {
     settings () {
@@ -63,11 +66,16 @@ export default {
       this.list = [
         { text: 'Your Rooms: ', type: 'info', click: this.doNothing },
         { text: '', type: 'select', click: this.doNothing },
-        { text: 'Choose', type: 'button', click: this.doNothing },
+        { text: 'Choose', type: 'button', click: this.choose },
         { text: 'Back', type: 'button', click: this.back }
       ]
       const response = await fetch('http://localhost:3000/api/room/opened')
       this.visitedRooms = await response.json()
+    },
+    choose () {
+      if (this.room) {
+        this.$router.push(`/chat/${this.room}`)
+      }
     },
     toRoom () {
       this.list = [
@@ -184,7 +192,6 @@ ul {
     flex-direction: column;
     li {
       margin: 12px;
-      padding: 24px;
       font-size: 32px;
       align-self: center;
       border-radius: 12px;
@@ -203,6 +210,24 @@ ul {
       }
       .button {
         color: lime;
+      }
+      select {
+        background: #000;
+        color: lime;
+        border: none;
+        font-size: 18px;
+        padding-bottom: 3px;
+        &:focus {
+          outline: 0;
+          border-bottom: outset 3px #009900;
+          padding-bottom: 0;
+          transition: border-bottom 200ms, padding-bottom 200ms;
+        }
+        option {
+          &:focus {
+            outline: 0;
+          }
+        }
       }
       .info {
         color: #009900;
@@ -227,7 +252,6 @@ ul {
     flex-wrap: wrap;
     li {
       margin: 6px;
-      padding: 12px;
       font-size: 16px;
       border-bottom: outset 3px #009900;
       cursor: pointer;
@@ -242,9 +266,27 @@ ul {
           outline: 0;
         }
       }
+      select {
+        background: #000;
+        color: lime;
+        border: none;
+        font-size: 10px;
+        padding-bottom: 3px;
+        &:focus {
+          outline: 0;
+          border-bottom: outset 3px #009900;
+          padding-bottom: 0;
+          transition: border-bottom 200ms, padding-bottom 200ms;
+        }
+        option {
+          &:focus {
+            outline: 0;
+          }
+        }
+      }
       .button {
-         cursor: pointer;
-         color: lime;
+        cursor: pointer;
+        color: lime;
       }
       .info {
         color: #009900;
