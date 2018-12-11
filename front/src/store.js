@@ -159,15 +159,22 @@ export default new Vuex.Store({
     },
     async generateKey (context) {
       const alice = crypto.createDiffieHellman(256)
-      alice.generateKeys()
+      alice.generateKeys('hex')
       const response = await fetch(`http://localhost:3000/api/key/generate?key=${alice.getPublicKey('hex')}&prime=${alice.getPrime('hex')}&generator=${alice.getGenerator('hex')}`)
       const result = await response.json()
       if (result.bobKey) {
-        const bobKey = new Uint8Array(Math.ceil(result.bobKey.length / 2))
-        for (let i = 0; i < bobKey.length; i++) bobKey[i] = parseInt(result.bobKey.substr(i * 2, 2), 16)
-        const secret = alice.computeSecret(bobKey)
+        const secret = alice.computeSecret(result.bobKey, 'hex')
         context.state.key = secret
       }
+      // alice.generateKeys()
+      // const response = await fetch(`http://localhost:3000/api/key/generate?key=${alice.getPublicKey('hex')}&prime=${alice.getPrime('hex')}&generator=${alice.getGenerator('hex')}`)
+      // const result = await response.json()
+      // if (result.bobKey) {
+      //   const bobKey = new Uint8Array(Math.ceil(result.bobKey.length / 2))
+      //   for (let i = 0; i < bobKey.length; i++) bobKey[i] = parseInt(result.bobKey.substr(i * 2, 2), 16)
+      //   const secret = alice.computeSecret(bobKey)
+      //   context.state.key = secret
+      // }
     },
     async encrypt (context, text) {
       if (!context.state.key) {

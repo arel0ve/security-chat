@@ -53,61 +53,17 @@ export default {
       ws: null
     }
   },
-  async created () {
-    this.username = this.$store.getters.getUsername
-    this.room.id = this.$route.params.id
-    let verifiedRoom = await this.$store.dispatch('getRoom', this.room.id)
-    if (!verifiedRoom) {
-      window.alert(`Room ${this.room.id} Is not yet opened for you. \n
-      You can go to this room from main menu if you know password.`)
-      this.$router.push('/')
+  watch: {
+    $route: async function (newRoute, oldRoute) {
       if (this.ws) {
         this.ws.close(1000, JSON.stringify({ room: this.room.id }))
         this.ws = null
       }
-      return
+      await this.createComponent(newRoute.params.id)
     }
-    this.room.store = verifiedRoom.store
-    this.messages = verifiedRoom.messages
-    this.ws = new WebSocket('ws://localhost:40510')
-    this.ws.onopen = () => {
-      this.ws.send(JSON.stringify({
-        action: 'connect',
-        store: this.room.store,
-        username: this.username,
-        room: this.room.id
-      }))
-    }
-    this.ws.onmessage = async res => {
-      res = JSON.parse(res.data)
-      if (res.action === 'message') {
-        await this.$store.dispatch('addMessage', {
-          id: this.room.id,
-          message: {
-            from: res.from,
-            text: res.text,
-            date: res.date
-          }
-        })
-        this.messages.push({
-          from: res.from,
-          text: res.text,
-          date: res.date
-        })
-        this.stableIPs = null
-      } else if (res.action === 'new_user') {
-        this.stableIPs = false
-        this.IPs = res.watchers
-      } else if (res.action === 'removed_user') {
-        this.stableIPs = true
-        this.IPs = res.watchers
-      }
-      this.connected = res.connected
-    }
-    window.onunload = () => {
-      this.ws.close(1000, JSON.stringify({ room: this.room.id }))
-      this.ws = null
-    }
+  },
+  async created () {
+    await this.createComponent(this.$route.params.id)
   },
   destroyed () {
     if (this.ws) {
@@ -116,6 +72,62 @@ export default {
     }
   },
   methods: {
+    async createComponent (id) {
+      this.username = this.$store.getters.getUsername
+      this.room.id = id
+      let verifiedRoom = await this.$store.dispatch('getRoom', this.room.id)
+      if (!verifiedRoom) {
+        window.alert(`Room ${this.room.id} is not yet opened for you. \n
+      You can go to this room from main menu if you know password.`)
+        this.$router.push('/')
+        if (this.ws) {
+          this.ws.close(1000, JSON.stringify({ room: this.room.id }))
+          this.ws = null
+        }
+        return
+      }
+      this.room.store = verifiedRoom.store
+      this.messages = verifiedRoom.messages
+      this.ws = new WebSocket('ws://localhost:40510')
+      this.ws.onopen = () => {
+        this.ws.send(JSON.stringify({
+          action: 'connect',
+          store: this.room.store,
+          username: this.username,
+          room: this.room.id
+        }))
+      }
+      this.ws.onmessage = async res => {
+        res = JSON.parse(res.data)
+        if (res.action === 'message') {
+          await this.$store.dispatch('addMessage', {
+            id: this.room.id,
+            message: {
+              from: res.from,
+              text: res.text,
+              date: res.date
+            }
+          })
+          this.messages.push({
+            from: res.from,
+            text: res.text,
+            date: res.date
+          })
+          this.stableIPs = null
+        } else if (res.action === 'new_user') {
+          this.stableIPs = false
+          this.IPs = res.watchers
+        } else if (res.action === 'removed_user') {
+          this.stableIPs = true
+          this.IPs = res.watchers
+        }
+        this.connected = res.connected
+      }
+      window.onunload = () => {
+        this.ws.close(1000, JSON.stringify({ room: this.room.id }))
+        this.ws = null
+      }
+    },
     toggleIPs () {
       this.showIPs = !this.showIPs
     },
