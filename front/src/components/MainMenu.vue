@@ -90,18 +90,19 @@ export default {
         if (!this.room || !this.password) {
           return
         }
+        const password = await this.$store.dispatch('encrypt', this.password)
         const response = await fetch(`http://localhost:3000/api/room/open/${this.room}`, {
           method: 'post',
           headers: new Headers({
             'Content-Type': 'application/json; charset=utf-8'
           }),
           body: JSON.stringify({
-            password: this.password
+            password
           })
         })
         const result = await response.json()
         if (result.id) {
-          this.$store.dispatch('addRoom', { id: result.id, password: this.password, store: result.store })
+          this.$store.dispatch('addRoom', { id: result.id, store: result.store })
           this.$router.push(`/chat/${result.id}`)
         } else {
           this.list = [
@@ -132,13 +133,14 @@ export default {
         if (!store) {
           store = 'app'
         }
+        const password = await this.$store.dispatch('encrypt', this.password)
         const response = await fetch('http://localhost:3000/api/room/', {
           method: 'post',
           headers: new Headers({
             'Content-Type': 'application/json; charset=utf-8'
           }),
           body: JSON.stringify({
-            password: this.password,
+            password,
             store
           })
         })

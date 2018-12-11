@@ -2,11 +2,9 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import _ from 'lodash'
 import crypto from 'diffie-hellman'
+import aesjs from 'aes-js'
 
 Vue.use(Vuex)
-
-const PRIME = 'f3df7dd339fa10e8357151eec027cb2ab2dd934d229ef9c03adc77e5701c9933';
-const GENERATOR = '02';
 
 export default new Vuex.Store({
   state: {
@@ -162,17 +160,24 @@ export default new Vuex.Store({
     async generateKey (context) {
       const alice = crypto.createDiffieHellman(256)
       alice.generateKeys()
-
       const response = await fetch(`http://localhost:3000/api/key/generate?key=${alice.getPublicKey('hex')}&prime=${alice.getPrime('hex')}&generator=${alice.getGenerator('hex')}`)
       const result = await response.json()
       if (result.bobKey) {
         const bobKey = new Uint8Array(Math.ceil(result.bobKey.length / 2))
         for (let i = 0; i < bobKey.length; i++) bobKey[i] = parseInt(result.bobKey.substr(i * 2, 2), 16)
-
         const secret = alice.computeSecret(bobKey)
         context.state.key = secret
       }
-
+    },
+    async encrypt (context, text) {
+      if (!context.state.key) {
+        return ''
+      }
+      const textBytes = aesjs.utils.utf8.toBytes(text)
+      const aesCtr = new aesjs.ModeOfOperation.ctr(context.state.key)
+      const encryptedBytes = aesCtr.encrypt(textBytes)
+      const encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes)
+      return encryptedHex
     }
   }
 })
