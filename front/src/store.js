@@ -142,10 +142,10 @@ export default new Vuex.Store({
       let messagesFromLocalStorage = window.localStorage.getItem(`room-${id}`)
       if (messagesFromLocalStorage) {
         messagesFromLocalStorage = JSON.parse(messagesFromLocalStorage)
-        messagesFromLocalStorage.messages.push(message)
+        messagesFromLocalStorage.messages.unshift(message)
         window.localStorage.setItem(`room-${id}`, JSON.stringify(messagesFromLocalStorage))
       }
-      room.messages.push(message)
+      room.messages.unshift(message)
       return room.messages
     },
     async getStoreOfRoom (context, id) {

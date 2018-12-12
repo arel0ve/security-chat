@@ -17,6 +17,8 @@
     We don't save your messages in database if you don't ask about it.
     That's why please be careful if you want to save messages in database or local storage,
     because it will be vulnerable if someone break your computer, or our database, or you, or us.</p>
+    <p>Oh, we almost forgot: you can always see how many people and who actually read your chat
+    if you open 'Connected IP' at the top of the chat room.</p>
   </div>
 </template>
 
