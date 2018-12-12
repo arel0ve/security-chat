@@ -134,6 +134,7 @@ export default new Vuex.Store({
         window.localStorage.setItem(`room-${id}`, JSON.stringify(messagesFromLocalStorage))
       }
       room.messages.push(message)
+      return room.messages
     },
     async getStoreOfRoom (context, id) {
       let room = await context.dispatch('getRoom', id)

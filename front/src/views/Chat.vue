@@ -112,19 +112,13 @@ export default {
           this.secret = alice.computeSecret(bobKey)
         } else if (res.action === 'message') {
           const text = await this.$store.dispatch('decrypt', { text: res.text, key: this.secret })
-          console.log(text)
-          await this.$store.dispatch('addMessage', {
+          this.messages = await this.$store.dispatch('addMessage', {
             id: this.room.id,
             message: {
               from: res.from,
               text,
               date: res.date
             }
-          })
-          this.messages.push({
-            from: res.from,
-            text,
-            date: res.date
           })
           this.stableIPs = null
         } else if (res.action === 'new_user') {
