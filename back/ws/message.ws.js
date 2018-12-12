@@ -94,7 +94,7 @@ wss.on('connection', (ws, req) => {
     if (msg) {
       msg = JSON.parse(msg);
       const room = _.find(connectedRooms, {room: msg.room});
-      _.pull(room.connections, ws);
+      _.pullAllBy(room.connections, [{ ws }], 'ws');
       _.pullAllBy(room.watchers, [{ IP: req.connection.remoteAddress }], 'IP');
       room.connections.forEach(connectedWs => {
         if (connectedWs.ws.readyState === 1) {
