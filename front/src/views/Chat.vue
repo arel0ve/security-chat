@@ -4,6 +4,12 @@
     <div class="room-head">
       <div class="head-label">Chat ID:</div>
       <div class="head-data">{{room.id }}</div>
+      <div class="head-label">Store:</div>
+      <div class="head-data">
+        <span v-if="room.store === 'db'">Database</span>
+        <span v-else-if="room.store === 'local'">Local Storage</span>
+        <span v-else>Application Store</span>
+      </div>
       <div class="head-label pseudo-link" @click="toggleIPs">Connected IP:</div>
       <div class="head-data pseudo-link" @click="toggleIPs"
            :class="{ 'non-stable-ips': stableIPs === false, 'very-stable-ips': stableIPs === true }">
@@ -139,6 +145,9 @@ export default {
       this.showIPs = !this.showIPs
     },
     async sendMessage () {
+      if (!this.$store.getters.getKey) {
+        await this.$store.dispatch('generateKey')
+      }
       const text = await this.$store.dispatch('encrypt', { text: this.message, key: this.secret })
       this.ws.send(JSON.stringify({
         action: 'message',
