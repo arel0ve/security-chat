@@ -30,6 +30,7 @@
 
 <script>
 import MainMenu from '../components/MainMenu'
+import crypto from 'diffie-hellman'
 
 export default {
   name: 'chat',
@@ -50,7 +51,8 @@ export default {
       IPs: [],
       showIPs: false,
       messages: [ ],
-      ws: null
+      ws: null,
+      secret: ''
     }
   },
   watch: {
@@ -89,28 +91,39 @@ export default {
       this.room.store = verifiedRoom.store
       this.messages = verifiedRoom.messages
       this.ws = new WebSocket('ws://localhost:40510')
+      const alice = crypto.createDiffieHellman(256)
       this.ws.onopen = () => {
+        alice.generateKeys()
         this.ws.send(JSON.stringify({
           action: 'connect',
           store: this.room.store,
           username: this.username,
-          room: this.room.id
+          room: this.room.id,
+          publicKey: alice.getPublicKey('hex'),
+          prime: alice.getPrime('hex'),
+          generator: alice.getGenerator('hex')
         }))
       }
       this.ws.onmessage = async res => {
         res = JSON.parse(res.data)
-        if (res.action === 'message') {
+        if (res.action === 'connected') {
+          const bobKey = new Uint8Array(Math.ceil(res.bobKey.length / 2))
+          for (let i = 0; i < bobKey.length; i++) bobKey[i] = parseInt(res.bobKey.substr(i * 2, 2), 16)
+          this.secret = alice.computeSecret(bobKey)
+        } else if (res.action === 'message') {
+          const text = await this.$store.dispatch('decrypt', { text: res.text, key: this.secret })
+          console.log(text)
           await this.$store.dispatch('addMessage', {
             id: this.room.id,
             message: {
               from: res.from,
-              text: res.text,
+              text,
               date: res.date
             }
           })
           this.messages.push({
             from: res.from,
-            text: res.text,
+            text,
             date: res.date
           })
           this.stableIPs = null
@@ -132,12 +145,13 @@ export default {
       this.showIPs = !this.showIPs
     },
     async sendMessage () {
+      const text = await this.$store.dispatch('encrypt', { text: this.message, key: this.secret })
       this.ws.send(JSON.stringify({
         action: 'message',
         room: this.room.id,
         store: this.room.store,
         from: this.username,
-        text: this.message
+        text
       }))
       this.message = ''
     }

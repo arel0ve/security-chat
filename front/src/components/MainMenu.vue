@@ -90,7 +90,7 @@ export default {
         if (!this.room || !this.password) {
           return
         }
-        const password = await this.$store.dispatch('encrypt', this.password)
+        const password = await this.$store.dispatch('encrypt', { text: this.password })
         const response = await fetch(`http://localhost:3000/api/room/open/${this.room}`, {
           method: 'post',
           headers: new Headers({
@@ -133,7 +133,7 @@ export default {
         if (!store) {
           store = 'app'
         }
-        const password = await this.$store.dispatch('encrypt', this.password)
+        const password = await this.$store.dispatch('encrypt', { text: this.password })
         const response = await fetch('http://localhost:3000/api/room/', {
           method: 'post',
           headers: new Headers({

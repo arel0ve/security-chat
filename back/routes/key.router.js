@@ -23,9 +23,8 @@ router.get('/generate', function(req, res, next) {
     const generator = new Uint8Array(Math.ceil(req.query.generator.length / 2));
     for (let i = 0; i < generator.length; i++) generator[i] = parseInt(req.query.generator.substr(i * 2, 2), 16);
 
-
     const bob = crypto.createDiffieHellman(prime, generator);
-    const bobKey = bob.generateKeys();
+    bob.generateKeys();
 
     const secret = bob.computeSecret(aliceKey);
     req.session.secret = secret;

@@ -14,7 +14,8 @@ export default new Vuex.Store({
       lifeDays: 0
     },
     rooms: [],
-    key: ''
+    key: '',
+    wskey: ''
   },
   getters: {
     getUsername (state) {
@@ -159,32 +160,35 @@ export default new Vuex.Store({
     },
     async generateKey (context) {
       const alice = crypto.createDiffieHellman(256)
-      alice.generateKeys('hex')
+      alice.generateKeys()
       const response = await fetch(`http://localhost:3000/api/key/generate?key=${alice.getPublicKey('hex')}&prime=${alice.getPrime('hex')}&generator=${alice.getGenerator('hex')}`)
       const result = await response.json()
       if (result.bobKey) {
-        const secret = alice.computeSecret(result.bobKey, 'hex')
+        const bobKey = new Uint8Array(Math.ceil(result.bobKey.length / 2))
+        for (let i = 0; i < bobKey.length; i++) bobKey[i] = parseInt(result.bobKey.substr(i * 2, 2), 16)
+        const secret = alice.computeSecret(bobKey)
         context.state.key = secret
       }
-      // alice.generateKeys()
-      // const response = await fetch(`http://localhost:3000/api/key/generate?key=${alice.getPublicKey('hex')}&prime=${alice.getPrime('hex')}&generator=${alice.getGenerator('hex')}`)
-      // const result = await response.json()
-      // if (result.bobKey) {
-      //   const bobKey = new Uint8Array(Math.ceil(result.bobKey.length / 2))
-      //   for (let i = 0; i < bobKey.length; i++) bobKey[i] = parseInt(result.bobKey.substr(i * 2, 2), 16)
-      //   const secret = alice.computeSecret(bobKey)
-      //   context.state.key = secret
-      // }
     },
-    async encrypt (context, text) {
-      if (!context.state.key) {
+    async encrypt (context, { text, key = context.state.key }) {
+      if (!key) {
         return ''
       }
       const textBytes = aesjs.utils.utf8.toBytes(text)
-      const aesCtr = new aesjs.ModeOfOperation.ctr(context.state.key)
+      const aesCtr = new aesjs.ModeOfOperation.ctr(key)
       const encryptedBytes = aesCtr.encrypt(textBytes)
       const encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes)
       return encryptedHex
+    },
+    async decrypt (context, { text, key = context.state.key }) {
+      if (!key) {
+        return ''
+      }
+      const encryptedBytes = aesjs.utils.hex.toBytes(text)
+      const aesCtr = new aesjs.ModeOfOperation.ctr(key)
+      const decryptedBytes = aesCtr.decrypt(encryptedBytes)
+      const decryptedText = aesjs.utils.utf8.fromBytes(decryptedBytes)
+      return decryptedText
     }
   }
 })
