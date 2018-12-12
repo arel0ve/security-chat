@@ -91,6 +91,9 @@ export default new Vuex.Store({
           room.id = id
           context.dispatch('addRoom', room)
         } else {
+          if (!context.getters.getKey) {
+            await context.dispatch('generateKey')
+          }
           const response = await fetch(`http://localhost:3000/api/room/visit/${id}`)
           const result = await response.json()
           if (result.id) {
@@ -100,7 +103,16 @@ export default new Vuex.Store({
               messages: []
             }
             if (result.messages) {
-              room.messages = result.messages
+              const encryptedMessages = []
+              result.messages.forEach(async message => {
+                const decryptText = await context.dispatch('decrypt', { text: message.text })
+                encryptedMessages.push({
+                  from: message.from,
+                  text: decryptText,
+                  date: message.date
+                })
+              })
+              room.messages = encryptedMessages
             }
             context.dispatch('addRoom', room)
           }
@@ -154,9 +166,21 @@ export default new Vuex.Store({
       if (!room.password) {
         return []
       }
+      if (!context.getters.getKey) {
+        await context.dispatch('generateKey')
+      }
       const response = await fetch(`http://localhost:3000/api/messages/${room.id}?from=0&to=50`)
       const result = await response.json()
-      room.messages = result.messages
+      const encryptedMessages = []
+      result.messages.forEach(async message => {
+        const decryptText = await context.dispatch('decrypt', { text: message.text })
+        encryptedMessages.push({
+          from: message.from,
+          text: decryptText,
+          date: message.date
+        })
+      })
+      room.messages = encryptedMessages
       return room.messages ? room.messages : []
     },
     async generateKey (context) {
@@ -172,7 +196,7 @@ export default new Vuex.Store({
       }
     },
     async encrypt (context, { text, key = context.state.key }) {
-      if (!key) {
+      if (!context.state.key) {
         return ''
       }
       const textBytes = aesjs.utils.utf8.toBytes(text)

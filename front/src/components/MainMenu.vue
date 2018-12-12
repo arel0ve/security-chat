@@ -54,9 +54,6 @@ export default {
       ]
     }
     this.list = this.defaultList
-    if (!this.$store.getters.getKey) {
-      await this.$store.dispatch('generateKey')
-    }
   },
   methods: {
     settings () {
@@ -89,6 +86,9 @@ export default {
       try {
         if (!this.room || !this.password) {
           return
+        }
+        if (!this.$store.getters.getKey) {
+          await this.$store.dispatch('generateKey')
         }
         const password = await this.$store.dispatch('encrypt', { text: this.password })
         const response = await fetch(`http://localhost:3000/api/room/open/${this.room}`, {
@@ -133,8 +133,11 @@ export default {
         if (!store) {
           store = 'app'
         }
+        if (!this.$store.getters.getKey) {
+          await this.$store.dispatch('generateKey')
+        }
         const password = await this.$store.dispatch('encrypt', { text: this.password })
-        const response = await fetch('http://localhost:3000/api/room/', {
+        const response = await fetch('http://localhost:3000/api/room/create', {
           method: 'post',
           headers: new Headers({
             'Content-Type': 'application/json; charset=utf-8'

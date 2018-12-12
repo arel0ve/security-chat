@@ -4,7 +4,7 @@ const aesjs = require('aes-js');
 const Room = require('../schemas/room.schema');
 const Message = require('../schemas/message.schema');
 
-router.post('/', async function(req, res, next) {
+router.post('/create', async function(req, res, next) {
   try {
     if (!req.body.password) {
       res.status(400).json({
@@ -111,6 +111,14 @@ router.get('/visit/:room', async function(req, res, next) {
       return;
     }
 
+    if (!req.session.secret) {
+      res.status(401).json({
+        message: 'Have not secret',
+        id: null
+      });
+      return;
+    }
+
     if (req.session[`room_${req.params.room}`] !== 'Accessed') {
       res.status(401).json({
         message: 'Not authorized',
@@ -135,11 +143,25 @@ router.get('/visit/:room', async function(req, res, next) {
         .sort('-date')
         .limit(50);
 
+    const encryptedMessages = [];
+
+    messages.forEach(message => {
+      const textBytes = aesjs.utils.utf8.toBytes(message.text);
+      const aesCtr = new aesjs.ModeOfOperation.ctr(req.session.secret.data);
+      const encryptedBytes = aesCtr.encrypt(textBytes);
+      const encryptedText = aesjs.utils.hex.fromBytes(encryptedBytes);
+      encryptedMessages.push({
+        from: message.from,
+        text: encryptedText,
+        date: message.date
+      });
+    });
+
     res.status(200).json({
       message: 'Accessed',
       id: room._id,
       store: room.store,
-      messages
+      messages: encryptedMessages
     })
 
   } catch (e) {
