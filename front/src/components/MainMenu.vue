@@ -233,6 +233,12 @@ ul {
             outline: 0;
           }
         }
+        @media (min-width: 768px) {
+          font-size: 24px;
+        }
+        @media (min-width: 992px) {
+          font-size: 32px;
+        }
       }
       .info {
         color: #009900;
@@ -287,6 +293,9 @@ ul {
           &:focus {
             outline: 0;
           }
+        }
+        @media (min-width: 992px) {
+          font-size: 14px;
         }
       }
       .button {
