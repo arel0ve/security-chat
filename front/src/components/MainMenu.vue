@@ -1,6 +1,6 @@
 <template>
   <ul :class="{'main': mode === 'main', 'menu': mode === 'menu'}">
-    <li v-for="(li, index) of list" :key="index" v-on="{ click: li.click }">
+    <li v-for="(li, index) of list" :key="index" v-on="{ click: li.click }" :class="{'loading': loading}">
       <input v-if="li.type === 'input'" type="text" v-model="room" :placeholder="li.text">
       <input v-else-if="li.type === 'password'" type="password" v-model="password" :placeholder="li.text">
       <input v-else-if="li.type === 'passwordRepeat'" type="password" v-model="passwordRepeat" :placeholder="li.text">
@@ -27,7 +27,8 @@ export default {
       room: '',
       password: '',
       passwordRepeat: '',
-      visitedRooms: [ ]
+      visitedRooms: [ ],
+      loading: false
     }
   },
   async created () {
@@ -66,8 +67,10 @@ export default {
         { text: 'Choose', type: 'button', click: this.choose },
         { text: 'Back', type: 'button', click: this.back }
       ]
+      this.loading = true
       const response = await fetch('http://localhost:3000/api/room/opened')
       this.visitedRooms = await response.json()
+      this.loading = false
     },
     choose () {
       if (this.room) {
@@ -84,6 +87,7 @@ export default {
     },
     async open () {
       try {
+        this.loading = true
         if (!this.room || !this.password) {
           return
         }
@@ -101,6 +105,7 @@ export default {
           })
         })
         const result = await response.json()
+        this.loading = false
         if (result.id) {
           this.$store.dispatch('addRoom', { id: result.id, store: result.store })
           this.$router.push(`/chat/${result.id}`)
@@ -113,6 +118,7 @@ export default {
           ]
         }
       } catch (e) {
+        this.loading = false
         console.log(e)
       }
     },
@@ -126,6 +132,7 @@ export default {
     },
     async create () {
       try {
+        this.loading = true
         if (!this.password || !this.passwordRepeat || this.password !== this.passwordRepeat) {
           return
         }
@@ -148,6 +155,7 @@ export default {
           })
         })
         const result = await response.json()
+        this.loading = false
         if (result.id) {
           this.$store.dispatch('addRoom', { id: result.id, password: this.password, store: result.store })
           this.list = [
@@ -165,6 +173,7 @@ export default {
           ]
         }
       } catch (e) {
+        this.loading = false
         console.log(e)
       }
     },
@@ -187,6 +196,11 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
+@keyframes loading {
+  0% {border-color: #00AA00}
+  50% {border-color: #001100}
+  100% {border-color: #00AA00}
+}
 ul {
   display: flex;
   justify-content: space-around;
@@ -200,7 +214,7 @@ ul {
       font-size: 32px;
       align-self: center;
       border-radius: 12px;
-      border: outset 3px #00AA00;
+      border: 3px outset #00aa00;
       cursor: pointer;
       width: 80%;
       input {
@@ -254,6 +268,9 @@ ul {
       }
       @media (min-width: 992px) {
         width: 50%;
+      }
+      &.loading {
+        animation: loading 1s infinite running;
       }
     }
   }
@@ -313,6 +330,9 @@ ul {
       }
       @media (min-width: 768px) {
         width: calc(25% - 36px);
+      }
+      &.loading {
+        animation: loading 1s infinite running;
       }
     }
   }
