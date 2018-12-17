@@ -48,6 +48,8 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
   cookie: {
+    sameSite: false,
+    domain: 'localhost',
     httpOnly: true,
     secure: false
   },

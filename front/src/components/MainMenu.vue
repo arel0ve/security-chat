@@ -98,7 +98,8 @@ export default {
         const response = await fetch(`http://localhost:3000/api/room/open/${this.room}`, {
           method: 'post',
           headers: new Headers({
-            'Content-Type': 'application/json; charset=utf-8'
+            'Content-Type': 'application/json; charset=utf-8',
+            'Cookie': document.cookie
           }),
           body: JSON.stringify({
             password

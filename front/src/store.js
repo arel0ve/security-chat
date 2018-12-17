@@ -186,7 +186,13 @@ export default new Vuex.Store({
     async generateKey (context) {
       const alice = crypto.createDiffieHellman(256)
       alice.generateKeys()
-      const response = await fetch(`http://localhost:3000/api/key/generate?key=${alice.getPublicKey('hex')}&prime=${alice.getPrime('hex')}&generator=${alice.getGenerator('hex')}`)
+      console.log(document.cookie)
+      const response = await fetch(`http://localhost:3000/api/key/generate?key=${alice.getPublicKey('hex')}&prime=${alice.getPrime('hex')}&generator=${alice.getGenerator('hex')}`, {
+        method: 'get',
+        headers: {
+          'Cookie': document.cookie
+        }
+      })
       const result = await response.json()
       if (result.bobKey) {
         const bobKey = new Uint8Array(Math.ceil(result.bobKey.length / 2))

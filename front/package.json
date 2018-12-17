@@ -2,15 +2,20 @@
   "name": "front",
   "version": "0.1.0",
   "private": true,
+  "main": "elect.js",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "test:e2e": "vue-cli-service test:e2e"
+    "test:e2e": "vue-cli-service test:e2e",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
     "aes-js": "^3.1.2",
     "diffie-hellman": "^5.0.3",
+    "electron": "^3.0.12",
     "lodash": "^4.17.11",
     "register-service-worker": "^1.5.2",
     "vue": "^2.5.17",

@@ -6,6 +6,7 @@ const Message = require('../schemas/message.schema');
 
 router.post('/create', async function(req, res, next) {
   try {
+    console.log(req.headers);
     if (!req.body.password) {
       res.status(400).json({
         message: 'Bad request',
